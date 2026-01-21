@@ -1,0 +1,256 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Vehicle {
+  id        String   @id @default(uuid())
+  name      String
+  type      String
+  range     String
+  price     Int
+  image     String
+  status    String   // "Disponible" | "Rentado" | "Mantenimiento"
+  plate     String
+  year      Int
+  ownership String   // "Propia" | "Tercero"
+  ownerName String?
+  ownerDni  String?
+
+  rentals      Rental[]
+  maintenances Maintenance[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Client {
+  id      String   @id @default(uuid())
+  name    String
+  email   String   @unique
+  phone   String
+  address String
+  dni     String   @unique
+
+  rentals  Rental[]
+  invoices Invoice[]
+  payments Payment[]
+  refunds  Refund[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Rental {
+  id              String   @id @default(uuid())
+  vehicleId       String
+  clientId        String
+  startDate       DateTime
+  endDate         DateTime
+  originalEndDate DateTime?
+  dailyRate       Int
+  status          String   // "Activo" | "Finalizado"
+  totalAmount     Int?
+  commercialAgent String?
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  client  Client  @relation(fields: [clientId], references: [id])
+  invoice Invoice?
+  accountsPayable AccountPayable[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Invoice {
+  id            String   @id @default(uuid())
+  invoiceNumber String   @unique
+  rentalId      String?  @unique
+  clientId      String
+  amount        Int
+  paidAmount    Int      @default(0)
+  date          DateTime
+  status        String   // "Pagado" | "Pendiente" | "Parcial"
+  rentalDetails String?  // JSON string for snapshot
+
+  rental   Rental? @relation(fields: [rentalId], references: [id], onDelete: SetNull)
+  client   Client  @relation(fields: [clientId], references: [id])
+  payments Payment[]
+  refunds  Refund[]
+  expenses Expense[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Payment {
+  id        String   @id @default(uuid())
+  receiptId String
+  clientId  String
+  invoiceId String
+  amount    Int
+  paymentNumber String? @unique // Custom numbering P-XXX/YY
+  date      DateTime
+  method    String
+
+  client  Client  @relation(fields: [clientId], references: [id])
+  invoice Invoice @relation(fields: [invoiceId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Refund {
+  id        String   @id @default(uuid())
+  invoiceId String
+  clientId  String
+  amount    Int
+  refundNumber String? @unique // Custom numbering R-XXX/YY
+  date      DateTime
+  reason    String
+  status    String   @default("Pendiente") // Pendiente, Reembolsado
+
+  client  Client  @relation(fields: [clientId], references: [id])
+  invoice Invoice @relation(fields: [invoiceId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Maintenance {
+  id          String   @id @default(uuid())
+  vehicleId   String
+  description String
+  date        DateTime
+  cost        Int
+  status      String   // "Programado" | "En Proceso" | "Completado"
+  type        String?
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CompanySettings {
+  id      Int    @id @default(1)
+  name    String
+  logo    String
+  address String
+  phone   String
+  email   String
+  taxId   String
+  website String
+}
+
+model User {
+  id     String @id @default(uuid())
+  name   String
+  email  String @unique
+  role   String // "Admin" | "User" | "Registrar"
+  status String // "Active" | "Inactive"
+  password String @default("123456")
+  avatar String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ExpenseCategory {
+  id          String @id @default(uuid())
+  name        String
+  description String?
+  type        String   @default("Gasto") // "Gasto" | "Ingreso"
+  expenses    Expense[]
+}
+
+model Expense {
+  id          String   @id @default(uuid())
+  date        DateTime
+  amount      Int
+  expenseNumber String? @unique // Custom numbering G-XXX/YY
+  description String
+  categoryId  String
+  invoiceId   String?
+  status      String   // "Pagado" | "Pendiente"
+
+  category ExpenseCategory @relation(fields: [categoryId], references: [id])
+  invoice  Invoice?        @relation(fields: [invoiceId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Owner {
+  id     String @id @default(uuid())
+  name   String
+  dni    String @unique
+  phone  String
+  email  String @unique
+  status String // "Activo" | "Inactivo"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CommercialAgent {
+  id     String @id @default(uuid())
+  name   String
+  dni    String @unique
+  phone  String
+  email  String @unique
+  status String // "Activo" | "Inactivo"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AccountPayable {
+  id              String   @id @default(uuid())
+  rentalId        String
+  type            String   // "Propietario" | "Comercial"
+  beneficiaryName String
+  beneficiaryDni  String?
+  amount          Int
+  date            DateTime
+  status          String   // "Pendiente" | "Pagado"
+
+  rental Rental @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Personnel {
+  id            String   @id @default(uuid())
+  name          String
+  dni           String   @unique
+  phone         String
+  email         String?
+  role          String   // "Conductor" | "Administrativo" | "Mecánico" | "Otro"
+  licenseNumber String?  // Only for Drivers
+  salary        Int?     // Only for Staff (FCFA)
+  status        String   // "Activo" | "Inactivo"
+  
+  driverPayments DriverPayment[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model DriverPayment {
+  id          String    @id @default(uuid())
+  personnelId String
+  amount      Int
+  date        DateTime
+  concept     String
+  notes       String?
+
+  personnel   Personnel @relation(fields: [personnelId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Payroll {
+  id          String   @id @default(uuid())
+  month       Int
+  year        Int
+  totalAmount Int
+  status      String   // "Borrador" | "Pagado"
+  details     String   // JSON: [{ personnelId, name, salary, bonus, deduction, total }]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

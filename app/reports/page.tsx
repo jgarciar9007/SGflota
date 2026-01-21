@@ -10,9 +10,11 @@ import { generateDocumentHtml } from "@/lib/reportUtils";
 export default function ReportsPage() {
     const { vehicles, clients, rentals, maintenances, invoices, companySettings } = useData();
 
+
+
     const handlePrintFleetReport = () => {
         const content = `
-            <div class="section-title">Resumen de Flota</div>
+            < div class="section-title" > Resumen de Flota</div >
             <div style="display: flex; gap: 20px; margin-bottom: 20px;">
                 <div style="flex: 1; background: #f9fafb; padding: 15px; border-radius: 8px; text-align: center;">
                     <div style="font-size: 24px; font-weight: bold; color: #2563eb;">${vehicles.length}</div>
@@ -76,7 +78,7 @@ export default function ReportsPage() {
         const completedRentals = rentals.filter(r => r.status === 'Finalizado');
 
         const content = `
-            <div class="section-title">Resumen de Rentas</div>
+            < div class="section-title" > Resumen de Rentas</div >
             <div style="display: flex; gap: 20px; margin-bottom: 20px;">
                 <div style="flex: 1; background: #f9fafb; padding: 15px; border-radius: 8px; text-align: center;">
                     <div style="font-size: 24px; font-weight: bold; color: #2563eb;">${rentals.length}</div>
@@ -117,9 +119,10 @@ export default function ReportsPage() {
         }).join('')}
                     </tbody>
                 </table>
-            ` : '<p style="font-size: 12px; color: #6b7280; font-style: italic;">No hay rentas activas.</p>'}
+            ` : '<p style="font-size: 12px; color: #6b7280; font-style: italic;">No hay rentas activas.</p>'
+            }
 
-            <div class="section-title">Últimas Rentas Finalizadas</div>
+        <div class="section-title">Últimas Rentas Finalizadas</div>
             ${completedRentals.length > 0 ? `
                 <table>
                     <thead>
@@ -132,9 +135,9 @@ export default function ReportsPage() {
                     </thead>
                     <tbody>
                         ${completedRentals.slice(0, 10).map(r => {
-            const client = clients.find(c => c.id === r.clientId);
-            const vehicle = vehicles.find(v => v.id === r.vehicleId);
-            return `
+                const client = clients.find(c => c.id === r.clientId);
+                const vehicle = vehicles.find(v => v.id === r.vehicleId);
+                return `
                                 <tr>
                                     <td>${client?.name || 'N/A'}</td>
                                     <td>${vehicle?.name || 'N/A'}</td>
@@ -142,10 +145,11 @@ export default function ReportsPage() {
                                     <td class="text-right">${r.totalAmount ? formatCurrency(r.totalAmount) : '-'}</td>
                                 </tr>
                             `;
-        }).join('')}
+            }).join('')}
                     </tbody>
                 </table>
-            ` : '<p style="font-size: 12px; color: #6b7280; font-style: italic;">No hay rentas finalizadas.</p>'}
+            ` : '<p style="font-size: 12px; color: #6b7280; font-style: italic;">No hay rentas finalizadas.</p>'
+            }
         `;
 
         const html = generateDocumentHtml("Reporte de Rentas", companySettings, content);
@@ -160,7 +164,7 @@ export default function ReportsPage() {
         const totalCost = maintenances.reduce((sum, m) => sum + m.cost, 0);
 
         const content = `
-            <div class="section-title">Resumen de Mantenimientos</div>
+            < div class="section-title" > Resumen de Mantenimientos</div >
             <div style="display: flex; gap: 20px; margin-bottom: 20px;">
                 <div style="flex: 1; background: #f9fafb; padding: 15px; border-radius: 8px; text-align: center;">
                     <div style="font-size: 24px; font-weight: bold; color: #dc2626;">${formatCurrency(totalCost)}</div>
@@ -212,7 +216,7 @@ export default function ReportsPage() {
 
     const handlePrintClientsReport = () => {
         const content = `
-            <div class="section-title">Listado de Clientes</div>
+            < div class="section-title" > Listado de Clientes</div >
             <div style="margin-bottom: 20px; font-size: 14px; color: #6b7280;">
                 Total de clientes registrados: <strong>${clients.length}</strong>
             </div>
@@ -255,7 +259,7 @@ export default function ReportsPage() {
         const netIncome = totalIncome - totalMaintenanceCost;
 
         const content = `
-            <div class="section-title">Resumen Financiero</div>
+            < div class="section-title" > Resumen Financiero</div >
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
                 <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; border: 1px solid #bbf7d0;">
@@ -309,19 +313,19 @@ export default function ReportsPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h2 className="text-3xl font-bold tracking-tight text-white">Reportes</h2>
-                <p className="text-gray-300">Genera reportes detallados del estado de tu negocio.</p>
+                <h2 className="text-3xl font-bold tracking-tight text-foreground">Reportes</h2>
+                <p className="text-muted-foreground">Genera reportes detallados del estado de tu negocio.</p>
             </div>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {/* Fleet Report */}
-                <Card className="border-gray-700 bg-gray-800/50 hover:bg-gray-800/70 transition-colors">
+                <Card className="border-border bg-card shadow-sm hover:shadow-md transition-all">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-lg font-medium text-white">Flota de Vehículos</CardTitle>
+                        <CardTitle className="text-lg font-medium text-foreground">Flota de Vehículos</CardTitle>
                         <Car className="h-5 w-5 text-blue-400" />
                     </CardHeader>
                     <CardContent>
-                        <p className="text-sm text-gray-400 mb-4">
+                        <p className="text-sm text-muted-foreground mb-4">
                             Listado completo de vehículos, estado actual, precios y características.
                         </p>
                         <Button onClick={handlePrintFleetReport} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
@@ -331,13 +335,13 @@ export default function ReportsPage() {
                 </Card>
 
                 {/* Rentals Report */}
-                <Card className="border-gray-700 bg-gray-800/50 hover:bg-gray-800/70 transition-colors">
+                <Card className="border-border bg-card shadow-sm hover:shadow-md transition-all">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-lg font-medium text-white">Rentas y Actividad</CardTitle>
+                        <CardTitle className="text-lg font-medium text-foreground">Rentas y Actividad</CardTitle>
                         <Calendar className="h-5 w-5 text-green-400" />
                     </CardHeader>
                     <CardContent>
-                        <p className="text-sm text-gray-400 mb-4">
+                        <p className="text-sm text-muted-foreground mb-4">
                             Historial de rentas, vehículos actualmente rentados y actividad reciente.
                         </p>
                         <Button onClick={handlePrintRentalsReport} className="w-full bg-green-600 hover:bg-green-700 text-white">
@@ -347,13 +351,13 @@ export default function ReportsPage() {
                 </Card>
 
                 {/* Maintenance Report */}
-                <Card className="border-gray-700 bg-gray-800/50 hover:bg-gray-800/70 transition-colors">
+                <Card className="border-border bg-card shadow-sm hover:shadow-md transition-all">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-lg font-medium text-white">Mantenimientos</CardTitle>
+                        <CardTitle className="text-lg font-medium text-foreground">Mantenimientos</CardTitle>
                         <Wrench className="h-5 w-5 text-red-400" />
                     </CardHeader>
                     <CardContent>
-                        <p className="text-sm text-gray-400 mb-4">
+                        <p className="text-sm text-muted-foreground mb-4">
                             Registro de mantenimientos, costos asociados y estado de reparaciones.
                         </p>
                         <Button onClick={handlePrintMaintenanceReport} className="w-full bg-red-600 hover:bg-red-700 text-white">
@@ -363,13 +367,13 @@ export default function ReportsPage() {
                 </Card>
 
                 {/* Clients Report */}
-                <Card className="border-gray-700 bg-gray-800/50 hover:bg-gray-800/70 transition-colors">
+                <Card className="border-border bg-card shadow-sm hover:shadow-md transition-all">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-lg font-medium text-white">Base de Clientes</CardTitle>
+                        <CardTitle className="text-lg font-medium text-foreground">Base de Clientes</CardTitle>
                         <Users className="h-5 w-5 text-purple-400" />
                     </CardHeader>
                     <CardContent>
-                        <p className="text-sm text-gray-400 mb-4">
+                        <p className="text-sm text-muted-foreground mb-4">
                             Directorio de clientes registrados con su información de contacto.
                         </p>
                         <Button onClick={handlePrintClientsReport} className="w-full bg-purple-600 hover:bg-purple-700 text-white">
@@ -379,13 +383,13 @@ export default function ReportsPage() {
                 </Card>
 
                 {/* Financial Report */}
-                <Card className="border-gray-700 bg-gray-800/50 hover:bg-gray-800/70 transition-colors md:col-span-2 lg:col-span-1">
+                <Card className="border-border bg-card shadow-sm hover:shadow-md transition-all md:col-span-2 lg:col-span-1">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-lg font-medium text-white">Reporte Financiero</CardTitle>
+                        <CardTitle className="text-lg font-medium text-foreground">Reporte Financiero</CardTitle>
                         <DollarSign className="h-5 w-5 text-yellow-400" />
                     </CardHeader>
                     <CardContent>
-                        <p className="text-sm text-gray-400 mb-4">
+                        <p className="text-sm text-muted-foreground mb-4">
                             Resumen de ingresos, gastos y balance general del negocio.
                         </p>
                         <Button onClick={handlePrintFinancialReport} className="w-full bg-yellow-600 hover:bg-yellow-700 text-white">

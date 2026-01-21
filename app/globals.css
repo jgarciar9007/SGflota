@@ -3,22 +3,44 @@
 @tailwind utilities;
 
 :root {
-  --background: #09090b;
-  --foreground: #fafafa;
-  
-  --primary: #3b82f6;
+  --background: #f8fafc;
+  /* Slate 50 */
+  --foreground: #0f172a;
+  /* Slate 900 */
+
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+
+  --primary: #4f46e5;
+  /* Indigo 600 - Premium Brand */
   --primary-foreground: #ffffff;
-  
-  --secondary: #27272a;
-  --secondary-foreground: #fafafa;
-  
-  --accent: #f59e0b;
-  --accent-foreground: #ffffff;
-  
-  --card: #18181b;
-  --card-foreground: #fafafa;
-  
-  --border: #27272a;
+
+  --secondary: #f1f5f9;
+  /* Slate 100 */
+  --secondary-foreground: #0f172a;
+
+  --muted: #f1f5f9;
+  /* Slate 100 */
+  --muted-foreground: #64748b;
+  /* Slate 500 */
+
+  --accent: #f1f5f9;
+  /* Slate 100 */
+  --accent-foreground: #0f172a;
+
+  --destructive: #ef4444;
+  /* Red 500 */
+  --destructive-foreground: #ffffff;
+
+  --border: #cbd5e1;
+  /* Slate 300 - Visible borders */
+  --input: #cbd5e1;
+  --ring: #4f46e5;
+
+  --radius: 0.5rem;
 }
 
 @layer base {
@@ -28,7 +50,7 @@
 }
 
 @layer utilities {
-  .glass {
-    @apply bg-white/5 backdrop-blur-lg border border-white/10;
+  .shadow-card {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
   }
 }
