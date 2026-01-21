@@ -28,6 +28,9 @@ export default function PayrollTab() {
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
     const [previewPayroll, setPreviewPayroll] = useState<PayrollItem[]>([]);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [viewPayroll, setViewPayroll] = useState<any | null>(null);
+
     // Filter staff (non-drivers)
     const staff = useMemo(() => personnel.filter(p => p.role !== 'Conductor' && p.status === 'Activo'), [personnel]);
 
@@ -130,7 +133,7 @@ export default function PayrollTab() {
                                     <p className="text-sm text-muted-foreground">Total Pagado</p>
                                     <p className="text-3xl font-bold text-green-600">{formatCurrency(payroll.totalAmount)}</p>
                                 </div>
-                                <Button variant="outline" size="sm" className="text-muted-foreground">
+                                <Button variant="outline" size="sm" className="text-muted-foreground" onClick={() => setViewPayroll(payroll)}>
                                     <Eye className="mr-2 h-4 w-4" /> Ver Detalles
                                 </Button>
                             </div>
@@ -226,6 +229,62 @@ export default function PayrollTab() {
                                         </>
                                     )}
                                 </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
+
+            {/* View Details Modal */}
+            {viewPayroll && (
+                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <Card className="w-full max-w-4xl border-border bg-card shadow-lg max-h-[90vh] overflow-y-auto">
+                        <CardHeader className="border-b border-border sticky top-0 bg-card z-10 flex flex-row items-center justify-between">
+                            <CardTitle>Detalle de Nómina: {getMonthName(viewPayroll.month)} {viewPayroll.year}</CardTitle>
+                            <Button variant="ghost" size="icon" onClick={() => setViewPayroll(null)}><span className="sr-only">Cerrar</span>✕</Button>
+                        </CardHeader>
+                        <CardContent className="p-6">
+                            <div className="mb-4 flex flex-col sm:flex-row gap-4 justify-between bg-muted/20 p-4 rounded-lg border border-border">
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Estado</p>
+                                    <p className="font-bold text-green-600">{viewPayroll.status}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-muted-foreground text-right sm:text-left">Monto Total</p>
+                                    <p className="text-2xl font-bold font-mono">{formatCurrency(viewPayroll.totalAmount)}</p>
+                                </div>
+                            </div>
+
+                            <table className="w-full text-sm text-left">
+                                <thead className="text-xs text-muted-foreground uppercase bg-muted">
+                                    <tr>
+                                        <th className="px-4 py-3">Empleado</th>
+                                        <th className="px-4 py-3 text-right">Salario Base</th>
+                                        <th className="px-4 py-3 text-right">Bonificaciones</th>
+                                        <th className="px-4 py-3 text-right">Deducciones</th>
+                                        <th className="px-4 py-3 text-right">Total Pagado</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-border">
+                                    {JSON.parse(viewPayroll.details).map((item: PayrollItem) => (
+                                        <tr key={item.personnelId}>
+                                            <td className="px-4 py-3 font-medium">
+                                                {item.name}
+                                                <div className="text-xs text-muted-foreground font-normal">{item.role}</div>
+                                            </td>
+                                            <td className="px-4 py-3 text-right font-mono text-muted-foreground">{formatCurrency(item.baseSalary)}</td>
+                                            <td className="px-4 py-3 text-right font-mono text-blue-600">{item.bonus > 0 ? `+${formatCurrency(item.bonus)}` : '-'}</td>
+                                            <td className="px-4 py-3 text-right font-mono text-red-600">{item.deductions > 0 ? `-${formatCurrency(item.deductions)}` : '-'}</td>
+                                            <td className="px-4 py-3 text-right font-bold text-foreground font-mono">
+                                                {formatCurrency(item.total)}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+
+                            <div className="flex justify-end mt-6">
+                                <Button variant="outline" onClick={() => setViewPayroll(null)}>Cerrar</Button>
                             </div>
                         </CardContent>
                     </Card>
