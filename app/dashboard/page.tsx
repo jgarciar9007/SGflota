@@ -280,7 +280,7 @@ function ActivitySection({ title, link, emptyText, items, type, context }: any) 
                                                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                                 {context.clients.find((c: any) => c.id === item.clientId)?.name || "Cliente"}
                                             </p>
-                                            <p className="text-xs text-muted-foreground">#{item.number}</p>
+                                            <p className="text-xs text-muted-foreground">#{item.invoiceNumber || (item.id ? item.id.slice(0, 8) : '---')}</p>
                                         </div>
                                     </div>
                                     <div className="text-right">
