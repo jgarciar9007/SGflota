@@ -5,7 +5,7 @@ import { useData } from "@/context/DataContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { DollarSign, Calendar, User, CheckCircle, Plus, X, Printer, CreditCard, FileText } from "lucide-react";
+import { DollarSign, Calendar, User, CheckCircle, Plus, X, Printer, CreditCard, FileText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
 
@@ -129,7 +129,7 @@ export default function BillingPage() {
 
     // --- Invoice Creation Logic ---
 
-    // const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -141,7 +141,7 @@ export default function BillingPage() {
             return;
         }
 
-        // setIsSubmitting(true);
+        setIsSubmitting(true);
         try {
             await addInvoice({
                 clientId: formData.clientId,
@@ -163,7 +163,7 @@ export default function BillingPage() {
             console.error("Error creating invoice:", error);
             toast.error("Error al crear la factura");
         } finally {
-            // setIsSubmitting(false);
+            setIsSubmitting(false);
         }
     };
 
@@ -1195,10 +1195,17 @@ export default function BillingPage() {
                                     </div>
                                     <Button
                                         onClick={handleSubmit}
-                                        disabled={!formData.clientId || formData.items.length === 0}
+                                        disabled={!formData.clientId || formData.items.length === 0 || isSubmitting}
                                         className="bg-green-600 hover:bg-green-700 text-white shadow-lg px-8 h-12 text-lg"
                                     >
-                                        Guardar y Crear Factura
+                                        {isSubmitting ? (
+                                            <>
+                                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                                Creando...
+                                            </>
+                                        ) : (
+                                            "Guardar y Crear Factura"
+                                        )}
                                     </Button>
                                 </div>
                             </CardContent>

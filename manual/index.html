@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual de Usuario - SGFlota</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="Logo">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M2 12h12"/></svg>
+            SGFlota
+        </div>
+        <ul class="nav-links">
+            <li><a href="#intro" class="active">Introducción</a></li>
+            <li><a href="#login">Acceso y Login</a></li>
+            <li><a href="#dashboard">Dashboard</a></li>
+            <li><a href="#flota">Gestión de Flota</a></li>
+            <li><a href="#rentas">Rentas y Arrendamientos</a></li>
+            <li><a href="#facturacion">Facturación y Pagos</a></li>
+            <li><a href="#gastos">Gastos y Mantenimiento</a></li>
+            <li><a href="#reportes">Reportes</a></li>
+            <li><a href="#configuracion">Configuración</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header id="intro">
+            <h1>Manual de Usuario</h1>
+            <p class="subtitle">Guía completa para el Sistema de Gestión de Flota v1.0</p>
+            <p style="margin-top: 1rem; color: #64748b;">Este documento detalla todas las funcionalidades del sistema SGFlota, diseñado para administrar vehículos, rentas y facturación de manera eficiente.</p>
+        </header>
+
+        <!-- Login -->
+        <section id="login">
+            <h2>1. Acceso al Sistema</h2>
+            <p>Para ingresar al sistema, debe contar con credenciales proporcionadas por el administrador.</p>
+            
+            <div class="screenshot-container">
+                <img src="screenshots/login.png" alt="Pantalla de Login" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div class="placeholder-text" style="display:none;">Captura de Pantalla: Login (login.png)</div>
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Credenciales</h4>
+                    <p>Ingrese su <strong>Usuario</strong> y <strong>Contraseña</strong>.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Roles</h4>
+                    <p>El sistema adapta el menú según su rol: <code>Admin</code>, <code>Registrador</code> o <code>Usuario</code>.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard -->
+        <section id="dashboard">
+            <h2>2. Dashboard (Panel de Control)</h2>
+            <p>La vista principal ofrece un monitoreo financiero y operativo en tiempo real.</p>
+            
+            <div class="screenshot-container">
+                <img src="screenshots/dashboard.png" alt="Dashboard Principal" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div class="placeholder-text" style="display:none;">Captura de Pantalla: Dashboard (dashboard.png)</div>
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Finanzas</h4>
+                    <p>Tarjetas con indicadores de Ingresos Totales, Utilidad Neta, Gastos Totales y Cuentas por Pagar.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Estado de Flota</h4>
+                    <p>Contadores de vehículos: Disponibles, Rentados, En Mantenimiento y De Terceros.</p>
+                </div>
+                 <div class="feature-card">
+                    <h4>Operaciones</h4>
+                    <p>Seguimiento de facturas pendientes de cobro y pagos emitidos a propietarios.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Fleet -->
+        <section id="flota">
+            <h2>3. Gestión de Flota</h2>
+            <p>El módulo de flota es el inventario central de todos los vehículos.</p>
+
+            <div class="screenshot-container">
+                <img src="screenshots/fleet_list.png" alt="Listado de Vehículos" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div class="placeholder-text" style="display:none;">Captura de Pantalla: Lista de Flota (fleet_list.png)</div>
+            </div>
+
+            <h3>Funcionalidades</h3>
+            <ul>
+                <li><strong>Vistas:</strong> Alterne entre vista de cuadrícula (imágenes grandes) y lista (tabla detallada).</li>
+                <li><strong>Filtros:</strong> Busque por placa, marca o estado (<span class="badge badge-green">Disponible</span>, <span class="badge badge-blue">Rentado</span>).</li>
+                <li><strong>Agregar Vehículo:</strong> Registre nuevos autos ingresando datos como placa, marca, modelo, precio diario y subiendo una foto.</li>
+            </ul>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Propiedad</h4>
+                    <p>Distinga entre <strong>Flota Propia</strong> y <strong>Terceros</strong> (vehículos gestionados de otros propietarios).</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Estadísticas por Vehículo</h4>
+                    <p>Haga clic en el ícono de gráfico en cada tarjeta para ver la rentabilidad específica de ese auto.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Rentals -->
+        <section id="rentas">
+            <h2>4. Rentas y Arrendamientos</h2>
+            <p>Gestione el ciclo de vida completo de un alquiler, desde la creación hasta la devolución.</p>
+
+            <div class="screenshot-container">
+                <img src="screenshots/rentals_active.png" alt="Rentas Activas" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div class="placeholder-text" style="display:none;">Captura de Pantalla: Rentas Activas (rentals_active.png)</div>
+            </div>
+
+            <h3>Nueva Renta</h3>
+            <p>Al crear una renta, el sistema validará automáticamente la disponibilidad del vehículo.</p>
+            <ol>
+                <li>Haga clic en <strong>Nueva Renta</strong>.</li>
+                <li>Seleccione un <strong>Vehículo</strong> disponible.</li>
+                <li>Seleccione un <strong>Cliente</strong> existente.</li>
+                <li>Defina las <strong>Fechas</strong> de inicio y fin estimado.</li>
+                <li>Asigne un <strong>Agente Comercial</strong> (opcional) para comisiones.</li>
+            </ol>
+
+            <h3>Finalizar Renta (Devolución)</h3>
+            <p>Utilice el botón <strong>Finalizar</strong> en una renta activa para registrar la devolución. El sistema calculará el total final basado en los días reales utilizados.</p>
+        </section>
+
+        <!-- Billing -->
+        <section id="facturacion">
+            <h2>5. Facturación y Pagos</h2>
+            <p>Controle el flujo de caja, emisión de facturas y pagos a proveedores.</p>
+
+            <div class="screenshot-container">
+                <img src="screenshots/billing_invoices.png" alt="Facturación" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div class="placeholder-text" style="display:none;">Captura de Pantalla: Facturación (billing_invoices.png)</div>
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Facturas</h4>
+                    <p>Se generan automáticamente desde las rentas o manualmente. Estados: <span class="badge badge-red">Pendiente</span>, <span class="badge badge-yellow">Parcial</span>, <span class="badge badge-green">Pagado</span>.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Registrar Pago</h4>
+                    <p>Permite registrar pagos masivos de un cliente, aplicando el monto a las facturas más antiguas primero (FIFO) o manualmente.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Cuentas por Pagar</h4>
+                    <p>Gestione los pagos pendientes a propietarios externos (vehículos de terceros) y genere comprobantes de egreso.</p>
+                </div>
+            </div>
+
+            <h3 style="margin-top:2rem;">Impresión</h3>
+            <p>El sistema genera documentos imprimibles (PDF) para Facturas, Recibos de Caja y Comprobantes de Egreso con un solo clic.</p>
+        </section>
+
+        <!-- Expenses -->
+        <section id="gastos">
+            <h2>6. Gastos y Recursos Humanos</h2>
+            <p>Este módulo centraliza todos los egresos de la empresa, desde mantenimiento de vehículos hasta pagos de personal.</p>
+
+            <div class="screenshot-container">
+                <img src="screenshots/expenses_maintenance.png" alt="Gastos y Mantenimiento" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div class="placeholder-text" style="display:none;">Captura de Pantalla: Gastos (expenses_maintenance.png)</div>
+            </div>
+
+            <div class="feature-grid">
+                 <div class="feature-card">
+                    <h4>Gastos Generales</h4>
+                    <p>Registro de gastos operativos (combustible, limpieza, servicios) categorizados.</p>
+                </div>
+                 <div class="feature-card">
+                    <h4>Mantenimiento</h4>
+                    <p>Historial técnico de reparaciones. Permite cambiar el estado del vehículo a "En Taller".</p>
+                </div>
+                 <div class="feature-card">
+                    <h4>Pagos a Conductores</h4>
+                    <p>Gestión de pagos específicos para el personal de conducción (viáticos, servicios).</p>
+                </div>
+                 <div class="feature-card">
+                    <h4>Nómina (Payroll)</h4>
+                    <p>Generación y registro de nóminas mensuales para el staff fijo de la empresa.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reports -->
+        <section id="reportes">
+            <h2>7. Reportes</h2>
+            <p>El sistema incluye un generador de reportes en PDF con filtros de fecha personalizados. Los reportes se dividen en 4 categorías:</p>
+
+            <div class="screenshot-container">
+                <img src="screenshots/reports_menu.png" alt="Menú de Reportes" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div class="placeholder-text" style="display:none;">Captura de Pantalla: Reportes (reports_menu.png)</div>
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Financieros</h4>
+                    <ul>
+                        <li><strong>Estado de Resultados:</strong> Ingresos vs Gastos y Utilidad Neta.</li>
+                        <li><strong>Rentabilidad por Vehículo:</strong> Ingresos vs Mant. por unidad.</li>
+                        <li><strong>Desglose de Facturación:</strong> Detalle de facturas emitidas.</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>Operativos (Flota)</h4>
+                     <ul>
+                        <li><strong>Estado de Flota:</strong> Disponibilidad en tiempo real.</li>
+                        <li><strong>Rentas Activas:</strong> Vehículos actualmente alquilados.</li>
+                        <li><strong>Historial de Mantenimiento:</strong> Gastos de taller detallados.</li>
+                    </ul>
+                </div>
+                 <div class="feature-card">
+                    <h4>Recursos Humanos</h4>
+                     <ul>
+                        <li><strong>Histórico de Nóminas:</strong> Pagos salariales a staff.</li>
+                        <li><strong>Pagos a Conductores:</strong> Resumen de viáticos pagados.</li>
+                        <li><strong>Rendimiento:</strong> Ranking de conductores por ingresos recibidos.</li>
+                    </ul>
+                </div>
+                 <div class="feature-card">
+                    <h4>Clientes</h4>
+                     <ul>
+                        <li><strong>Facturación por Cliente:</strong> Ranking de mejores clientes.</li>
+                        <li><strong>Deuda:</strong> Clientes con facturas pendientes de pago.</li>
+                    </ul>
+                </div>
+            </div>
+            
+        </section>
+
+        <!-- Settings -->
+        <section id="configuracion">
+            <h2>8. Configuración</h2>
+            <p>El módulo de configuración es el centro de administración de datos maestros. Aquí se gestionan no solo las opciones del sistema, sino también las bases de datos de personas y entidades.</p>
+
+            <div class="screenshot-container">
+                <img src="screenshots/settings.png" alt="Configuración" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div class="placeholder-text" style="display:none;">Captura de Pantalla: Configuración (settings.png)</div>
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Empresa</h4>
+                    <p>Datos fiscales, dirección, teléfono y logo (visible en facturas PDF).</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Usuarios</h4>
+                    <p>Gestión de acceso al sistema con roles (Admin, Registrador, Usuario).</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Clientes</h4>
+                    <p>Base de datos de clientes. Es necesario registrar al cliente aquí antes de crear una renta.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Propietarios</h4>
+                    <p>Gestión de dueños de vehículos para la flota de terceros.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Personal y Agentes</h4>
+                    <p>Registro de empleados y agentes comerciales (para comisiones).</p>
+                </div>
+                 <div class="feature-card">
+                    <h4>Categorías de Gastos</h4>
+                    <p>Nomencladores para clasificar los egresos (ej. Combustible, Mantenimiento).</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- HR Detailed -->
+        <section id="rrhh">
+            <h2>9. Recursos Humanos (Nómina y Conductores)</h2>
+            <p>El sistema separa la gestión de personal en dos flujos de trabajo distintos para mayor flexibilidad.</p>
+            
+            <h3>Generación de Nómina (Staff Fijo)</h3>
+            <p>Para personal administrativo y mecánicos con salario base:</p>
+            <ol>
+                <li>Vaya a <strong>Gastos > Nómina</strong>.</li>
+                <li>Seleccione el <strong>Mes</strong> y <strong>Año</strong> a liquidar.</li>
+                <li>Haga clic en <button class="btn-mini">Generar Nómina</button>.</li>
+                <li>El sistema cargará automáticamente a todo el personal activo y sus salarios base.</li>
+                <li><strong>Ajustes:</strong> Puede ingresar manualmente <em>Bonificaciones</em> o <em>Deducciones</em> para cada empleado en la tabla de previsualización.</li>
+                <li>Confirme para guardar. La nómina quedará registrada como "Pagada" y afectará los reportes financieros.</li>
+            </ol>
+
+            <h3>Pagos a Conductores</h3>
+            <p>Para pagos variables o por servicio a choferes:</p>
+            <ul>
+                <li>Utilice la pestaña <strong>Pagos Conductores</strong> en el módulo de Gastos.</li>
+                <li>Registre cada pago individualmente, especificando el concepto (ej. "Viaje a Aeropuerto", "Viáticos").</li>
+            </ul>
+        </section>
+
+        <!-- Third Party Management -->
+        <section id="terceros">
+            <h2>10. Gestión de Flota de Terceros</h2>
+            <p>SGFlota permite administrar vehículos que no pertenecen a la empresa, calculando pagos a sus propietarios.</p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>1. Registro</h4>
+                    <p>Al crear un vehículo, seleccione <strong>Propiedad: Tercero</strong> y asigne el <strong>Propietario</strong> (previamente registrado en Configuración).</p>
+                </div>
+                <div class="feature-card">
+                    <h4>2. Operación</h4>
+                    <p>El vehículo se renta normalmente. El sistema rastrea los ingresos generados por esta unidad.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>3. Liquidación</h4>
+                    <p>En el módulo <strong>Facturación > Cuentas por Pagar</strong>, se generarán los montos adeudados al propietario (según la lógica de negocio configurada).</p>
+                </div>
+                 <div class="feature-card">
+                    <h4>4. Pago</h4>
+                    <p>Registre el pago al propietario para cambiar el estado de la deuda a <span class="badge badge-green">Pagado</span> y generar el comprobante de egreso.</p>
+                </div>
+            </div>
+        </section>
+
+        <footer style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid #e2e8f0; text-align: center; color: #64748b;">
+            <p>&copy; 2026 SGFlota. Todos los derechos reservados.</p>
+        </footer>
+
+    </main>
+
+    <script>
+        // Simple helper to highlight active link on scroll (Optional)
+        window.addEventListener('scroll', () => {
+            let current = '';
+            const sections = document.querySelectorAll('section, header');
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 150) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            document.querySelectorAll('.nav-links a').forEach(li => {
+                li.classList.remove('active');
+                if (li.getAttribute('href').includes(current)) {
+                    li.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

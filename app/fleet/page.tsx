@@ -137,6 +137,7 @@ export default function FleetPage() {
             </div>
 
             {viewMode === "grid" ? (
+                // ... Grid View Logic (Keep existing) ...
                 filteredVehicles.length > 0 ? (
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                         {filteredVehicles.map((car) => (
@@ -235,20 +236,6 @@ export default function FleetPage() {
                                         }}>
                                             <BadgeCheck className="h-4 w-4 mr-2" /> Editar
                                         </Button>
-                                        {canDelete(currentUser) && (
-                                            <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={async () => {
-                                                if (confirm(`¿Está seguro de eliminar el vehículo ${car.name}?`)) {
-                                                    try {
-                                                        await deleteVehicle(car.id);
-                                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                                    } catch (error: any) {
-                                                        alert(error.message);
-                                                    }
-                                                }
-                                            }}>
-                                                <Trash2 className="h-4 w-4 mr-2" /> Eliminar
-                                            </Button>
-                                        )}
                                     </div>
                                 </CardFooter>
                             </Card>
@@ -267,8 +254,95 @@ export default function FleetPage() {
                     </div>
                 )
             ) : (
-                <div className="text-center py-12 border border-dashed border-border rounded-lg">
-                    <p className="text-muted-foreground">Vista de lista no disponible momentáneamente.</p>
+                <div className="border border-border rounded-lg overflow-hidden bg-card">
+                    <table className="w-full text-sm">
+                        <thead className="bg-muted">
+                            <tr>
+                                <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden md:table-cell">Imagen</th>
+                                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Vehículo</th>
+                                <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden md:table-cell">Tipo</th>
+                                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Estado</th>
+                                <th className="px-4 py-3 text-right font-medium text-muted-foreground">Precio/Día</th>
+                                <th className="px-4 py-3 text-right font-medium text-muted-foreground">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border">
+                            {filteredVehicles.length > 0 ? filteredVehicles.map((car) => (
+                                <tr key={car.id} className="hover:bg-accent/50 transition-colors">
+                                    <td className="px-4 py-3 hidden md:table-cell w-20">
+                                        <div className="h-10 w-16 relative rounded overflow-hidden">
+                                            <Image src={car.image} alt={car.name} fill className="object-cover" unoptimized />
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        <div className="font-semibold text-foreground">{car.name}</div>
+                                        <div className="text-xs text-muted-foreground">{car.plate} • {car.year}</div>
+                                    </td>
+                                    <td className="px-4 py-3 hidden md:table-cell">
+                                        <div className="flex items-center gap-2">
+                                            {car.type === 'Eléctrico' ? <Battery className="h-3 w-3 text-green-400" /> : <Fuel className="h-3 w-3 text-orange-400" />}
+                                            {car.type}
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        <span className={`px-2 py-1 rounded-full text-xs font-semibold border ${car.status === 'Disponible' ? 'bg-green-100 text-green-700 border-green-200' :
+                                            car.status === 'Rentado' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                                                'bg-yellow-100 text-yellow-700 border-yellow-200'
+                                            }`}>
+                                            {car.status}
+                                        </span>
+                                    </td>
+                                    <td className="px-4 py-3 text-right font-bold text-foreground">
+                                        {formatCurrency(car.price)}
+                                    </td>
+                                    <td className="px-4 py-3 text-right">
+                                        <div className="flex justify-end gap-2">
+                                            <Button variant="ghost" size="sm" onClick={() => setSelectedVehicleStats(car)}>
+                                                <BarChart2 className="h-4 w-4" />
+                                            </Button>
+                                            <Button variant="ghost" size="sm" onClick={() => {
+                                                setFormData({
+                                                    name: car.name,
+                                                    type: car.type,
+                                                    range: car.range || "",
+                                                    price: car.price.toString(),
+                                                    plate: car.plate,
+                                                    year: car.year,
+                                                    image: car.image || "",
+                                                    ownership: car.ownership,
+                                                    ownerName: car.ownerName || "",
+                                                    ownerDni: car.ownerDni || ""
+                                                });
+                                                setShowAddModal(true);
+                                            }}>
+                                                <BadgeCheck className="h-4 w-4" />
+                                            </Button>
+                                            {canDelete(currentUser) && (
+                                                <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50" onClick={async () => {
+                                                    if (confirm(`¿Está seguro de eliminar el vehículo ${car.name}?`)) {
+                                                        try {
+                                                            await deleteVehicle(car.id);
+                                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                                        } catch (error: any) {
+                                                            alert(error.message);
+                                                        }
+                                                    }
+                                                }}>
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
+                            )) : (
+                                <tr>
+                                    <td colSpan={6} className="text-center py-8 text-muted-foreground">
+                                        No se encontraron vehículos.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
                 </div>
             )}
 

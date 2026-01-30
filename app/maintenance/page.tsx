@@ -9,8 +9,9 @@ import { Plus, X, Wrench, Calendar, Trash2 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
 export default function MaintenancePage() {
-    const { maintenances, vehicles, addMaintenance, deleteMaintenance, currentUser, canEdit } = useData();
+    const { maintenances, vehicles, addMaintenance, deleteMaintenance, updateMaintenance, currentUser, canEdit } = useData();
     const [showAddModal, setShowAddModal] = useState(false);
+    const [updatingId, setUpdatingId] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         vehicleId: "",
         description: "",
@@ -36,9 +37,16 @@ export default function MaintenancePage() {
         });
     };
 
-    // const handleStatusChange = (id: string, status: "Programado" | "En Proceso" | "Completado") => {
-    //     updateMaintenance(id, { status });
-    // };
+    const handleStatusChange = async (id: string, status: "Programado" | "En Proceso" | "Completado") => {
+        setUpdatingId(id);
+        try {
+            await updateMaintenance(id, { status });
+        } catch (error) {
+            console.error("Failed to update status", error);
+        } finally {
+            setUpdatingId(null);
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -63,9 +71,25 @@ export default function MaintenancePage() {
                         <Card key={maintenance.id} className="border-border bg-card hover:bg-accent/50 transition-colors group">
                             <CardHeader className="flex flex-row items-center justify-between pb-2">
                                 <CardTitle className="text-lg font-bold text-foreground">{vehicle?.name} ({vehicle?.plate})</CardTitle>
-                                <div className={`px-2 py-0.5 rounded-full text-xs font-semibold border ${maintenance.status === 'Completado' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`}>
-                                    {maintenance.status}
-                                </div>
+                                {canEdit(currentUser) ? (
+                                    <select
+                                        value={maintenance.status}
+                                        onChange={(e) => handleStatusChange(maintenance.id, e.target.value as any)}
+                                        disabled={updatingId === maintenance.id}
+                                        className={`px-2 py-0.5 rounded-full text-xs font-semibold border bg-transparent focus:ring-0 cursor-pointer ${maintenance.status === 'Completado' ? 'text-green-700 border-green-200 bg-green-50' :
+                                            maintenance.status === 'En Proceso' ? 'text-blue-700 border-blue-200 bg-blue-50' :
+                                                'text-yellow-700 border-yellow-200 bg-yellow-50'
+                                            }`}
+                                    >
+                                        <option value="Programado">Programado</option>
+                                        <option value="En Proceso">En Proceso</option>
+                                        <option value="Completado">Completado</option>
+                                    </select>
+                                ) : (
+                                    <div className={`px-2 py-0.5 rounded-full text-xs font-semibold border ${maintenance.status === 'Completado' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`}>
+                                        {maintenance.status}
+                                    </div>
+                                )}
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-4">

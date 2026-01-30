@@ -1,4 +1,16 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+# SGFlota - Sistema de Gestión de Flota
+
+Bienvenido a SGFlota, un sistema integral para la administración de alquiler de vehículos.
+
+## 📚 Manual de Usuario
+
+Para acceder a la documentación completa del sistema, consulte el manual de usuario incluido:
+
+- **[Abrir Manual de Usuario](./manual/index.html)**
+- El manual incluye capturas de pantalla, flujos de trabajo y explicaciones detalladas de todos los módulos.
+
+## Getting Started
 
 ## Getting Started
 
