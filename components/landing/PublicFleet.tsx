@@ -332,16 +332,29 @@ export function PublicFleet({ vehicles }: { vehicles: any[] }) {
                         <div>
                             <h4 className="text-white font-bold mb-6">Enlaces</h4>
                             <ul className="space-y-4">
-                                <li><a href="#" className="hover:text-blue-500 transition-colors">Flota</a></li>
-                                <li><a href="#" className="hover:text-blue-500 transition-colors">Servicios</a></li>
-                                <li><a href="#" className="hover:text-blue-500 transition-colors">Contacto</a></li>
+                                <li>
+                                    <button
+                                        onClick={() => document.getElementById('fleet')?.scrollIntoView({ behavior: 'smooth' })}
+                                        className="hover:text-blue-500 transition-colors text-left"
+                                    >
+                                        Flota
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        onClick={() => setIsContactModalOpen(true)}
+                                        className="hover:text-blue-500 transition-colors text-left"
+                                    >
+                                        Contacto
+                                    </button>
+                                </li>
                             </ul>
                         </div>
                         <div>
                             <h4 className="text-white font-bold mb-6">Legal</h4>
                             <ul className="space-y-4">
-                                <li><a href="#" className="hover:text-blue-500 transition-colors">Términos</a></li>
-                                <li><a href="#" className="hover:text-blue-500 transition-colors">Privacidad</a></li>
+                                <li><a href="/terms" className="hover:text-blue-500 transition-colors">Términos</a></li>
+                                <li><a href="/privacy" className="hover:text-blue-500 transition-colors">Privacidad</a></li>
                             </ul>
                         </div>
                     </div>
