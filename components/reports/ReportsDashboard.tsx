@@ -36,13 +36,13 @@ export function ReportsDashboard() {
                 </div>
             </div>
 
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+            <Tabs className="space-y-4">
                 <TabsList>
-                    <TabsTrigger value="overview" activeValue={activeTab}>Resumen</TabsTrigger>
-                    <TabsTrigger value="fleet" activeValue={activeTab}>Flota</TabsTrigger>
-                    <TabsTrigger value="financial" activeValue={activeTab}>Financiero</TabsTrigger>
-                    <TabsTrigger value="maintenance" activeValue={activeTab}>Mantenimiento</TabsTrigger>
-                    <TabsTrigger value="personnel" activeValue={activeTab}>Personal</TabsTrigger>
+                    <TabsTrigger value="overview" activeValue={activeTab} onValueChange={setActiveTab}>Resumen</TabsTrigger>
+                    <TabsTrigger value="fleet" activeValue={activeTab} onValueChange={setActiveTab}>Flota</TabsTrigger>
+                    <TabsTrigger value="financial" activeValue={activeTab} onValueChange={setActiveTab}>Financiero</TabsTrigger>
+                    <TabsTrigger value="maintenance" activeValue={activeTab} onValueChange={setActiveTab}>Mantenimiento</TabsTrigger>
+                    <TabsTrigger value="personnel" activeValue={activeTab} onValueChange={setActiveTab}>Personal</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview" activeValue={activeTab} className="space-y-4">

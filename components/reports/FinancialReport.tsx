@@ -106,7 +106,8 @@ export function FinancialReport() {
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                 <XAxis dataKey="name" />
                                 <YAxis tickFormatter={(value) => `${value / 1000}k`} />
-                                <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                                <Tooltip formatter={(value: any) => formatCurrency(value)} />
                                 <Legend />
                                 <Bar dataKey="Ingresos" fill="#2563eb" radius={[4, 4, 0, 0]} />
                                 <Bar dataKey="Gastos" fill="#ef4444" radius={[4, 4, 0, 0]} />

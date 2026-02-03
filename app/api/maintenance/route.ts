@@ -50,10 +50,13 @@ export async function PUT(request: Request) {
             data: updateData,
         });
 
-        // If completed, check if vehicle should be free
-        // Simplified: if maintenance is completed, we assume vehicle might be available unless rented.
-        // But multiple maintenances? Handling simple case: if completed, set to Available.
-        if (updateData.status === "Completado") {
+        // Sync vehicle status based on maintenance status
+        if (updateData.status === "En Proceso") {
+            await prisma.vehicle.update({
+                where: { id: maintenance.vehicleId },
+                data: { status: "Mantenimiento" }
+            });
+        } else if (updateData.status === "Completado") {
             await prisma.vehicle.update({
                 where: { id: maintenance.vehicleId },
                 data: { status: "Disponible" }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useData } from "@/context/DataContext";
@@ -6,7 +7,6 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { formatCurrency } from "@/lib/utils";
 import { generateDocumentHtml } from "@/lib/reportUtils";
 import {
-    BarChart3,
     PieChart,
     TrendingUp,
     Car,
@@ -20,6 +20,7 @@ import {
     AlertCircle,
     UserCheck
 } from "lucide-react";
+
 
 export default function ReportsPage() {
     const {

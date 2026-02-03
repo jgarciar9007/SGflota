@@ -122,7 +122,8 @@ export function MaintenanceReport() {
                                     <CartesianGrid strokeDasharray="3 3" />
                                     <XAxis type="number" tickFormatter={(val) => `${val / 1000}k`} />
                                     <YAxis dataKey="name" type="category" width={100} style={{ fontSize: '12px' }} />
-                                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                                    <Tooltip formatter={(value: any) => formatCurrency(value)} />
                                     <Bar dataKey="cost" fill="#ef4444" name="Costo Mantenimiento" radius={[0, 4, 4, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>

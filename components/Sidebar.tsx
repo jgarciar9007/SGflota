@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Car, LayoutDashboard, Settings, Calendar, LogOut, CreditCard, Wrench, FileText } from "lucide-react";
+import { Car, LayoutDashboard, Settings, Calendar, LogOut, CreditCard, Wrench, FileText, MessageSquare } from "lucide-react";
 
 const sidebarItems = [
     { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
+    { icon: MessageSquare, label: "Solicitudes", href: "/requests" },
     { icon: Car, label: "Flota", href: "/fleet" },
     { icon: Calendar, label: "Rentas", href: "/rentals" },
     { icon: CreditCard, label: "Facturación", href: "/billing" },

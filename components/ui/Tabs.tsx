@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils"
 
 const Tabs = React.forwardRef<
     HTMLDivElement,
-    React.HTMLAttributes<HTMLDivElement>
+    React.HTMLAttributes<HTMLDivElement> & { value?: string; onValueChange?: (value: string) => void }
 >(({ className, ...props }, ref) => (
     <div
         ref={ref}

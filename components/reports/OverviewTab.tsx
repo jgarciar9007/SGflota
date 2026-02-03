@@ -7,7 +7,7 @@ import { formatCurrency } from "@/lib/utils";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export function OverviewTab() {
-    const { invoices, rentals, maintenances, vehicles, clients } = useData();
+    const { invoices, rentals, maintenances, clients } = useData();
 
     // Calculate totals
     const totalIncome = invoices.reduce((sum, i) => sum + i.amount, 0);
@@ -89,7 +89,8 @@ export function OverviewTab() {
                             <CartesianGrid strokeDasharray="3 3" vertical={false} />
                             <XAxis dataKey="name" />
                             <YAxis tickFormatter={(value) => `${value / 1000}k`} />
-                            <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                            <Tooltip formatter={(value: any) => formatCurrency(value)} />
                             <Area type="monotone" dataKey="income" stroke="#2563eb" fillOpacity={1} fill="url(#colorIncome)" />
                         </AreaChart>
                     </ResponsiveContainer>

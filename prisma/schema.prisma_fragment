@@ -1,0 +1,19 @@
+
+model BookingRequest {
+  id              String   @id @default(uuid())
+  vehicleId       String?
+  vehicleName     String?  // In case selected vehicle is deleted
+  clientName      String
+  clientEmail     String
+  clientPhone     String
+  clientAddress   String?
+  startDate       DateTime
+  endDate         DateTime?
+  services        String?  // JSON input: { withDriver: boolean, fuel: boolean, tolls: boolean }
+  status          String   @default("Pendiente") // "Pendiente" | "Aceptado" | "Rechazado"
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  vehicle         Vehicle? @relation(fields: [vehicleId], references: [id])
+}

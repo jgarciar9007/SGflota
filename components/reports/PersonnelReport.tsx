@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useData } from "@/context/DataContext";
@@ -20,7 +21,7 @@ export function PersonnelReport() {
 
     const totalStaff = personnel.length;
     const drivers = personnel.filter((p: any) => p.role === 'Conductor').length;
-    const admins = personnel.filter((p: any) => p.role === 'Administrativo').length;
+
 
     const totalPaid = driverPayments.reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
 

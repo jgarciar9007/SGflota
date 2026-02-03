@@ -46,16 +46,7 @@ export async function POST(request: Request) {
         const suffix = `/${yearShort}`; // "/26"
 
         // Find last invoice of this year to increment
-        const lastInvoice = await prisma.invoice.findFirst({
-            where: {
-                invoiceNumber: { endsWith: suffix }
-            },
-            orderBy: {
-                invoiceNumber: 'desc' // Depends on format length uniformity or createdAt
-                // Ideally filter by regex but Prisma doesn't support easy regex.
-                // Assuming uniform length FC-XXX/YY allows explicit sorting.
-            }
-        });
+
 
         // Better sort by createdAt to get the latest created, assuming sequential creation
         const lastInvoiceTimeSorted = await prisma.invoice.findFirst({

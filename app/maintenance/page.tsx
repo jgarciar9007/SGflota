@@ -74,7 +74,7 @@ export default function MaintenancePage() {
                                 {canEdit(currentUser) ? (
                                     <select
                                         value={maintenance.status}
-                                        onChange={(e) => handleStatusChange(maintenance.id, e.target.value as any)}
+                                        onChange={(e) => handleStatusChange(maintenance.id, e.target.value as "Programado" | "En Proceso" | "Completado")}
                                         disabled={updatingId === maintenance.id}
                                         className={`px-2 py-0.5 rounded-full text-xs font-semibold border bg-transparent focus:ring-0 cursor-pointer ${maintenance.status === 'Completado' ? 'text-green-700 border-green-200 bg-green-50' :
                                             maintenance.status === 'En Proceso' ? 'text-blue-700 border-blue-200 bg-blue-50' :

@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -28,6 +28,7 @@ model Vehicle {
   maintenances Maintenance[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  bookingRequests BookingRequest[]
 }
 
 model Client {
@@ -253,4 +254,34 @@ model Payroll {
   details     String   // JSON: [{ personnelId, name, salary, bonus, deduction, total }]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model BookingRequest {
+  id              String   @id @default(uuid())
+  vehicleId       String?
+  vehicleName     String?  // In case selected vehicle is deleted
+  clientName      String
+  clientEmail     String
+  clientPhone     String
+  clientAddress   String?
+  startDate       DateTime
+  endDate         DateTime?
+  services        String?  // JSON input: { withDriver: boolean, fuel: boolean, tolls: boolean }
+  status          String   @default("Pendiente") // "Pendiente" | "Aceptado" | "Rechazado"
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  vehicle         Vehicle? @relation(fields: [vehicleId], references: [id])
+}
+
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  phone     String
+  message   String
+  status    String   @default("Pendiente") // "Pendiente" | "Atendido"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
