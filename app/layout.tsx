@@ -16,8 +16,11 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "SGFlota - Sistema de Gestión de Flota",
-  description: "Sistema Premium de Gestión de Flota de Vehículos",
+  title: "Urban Rentals - Sistema de Gestión",
+  description: "Plataforma Premium de Gestión de Flota",
+  icons: {
+    icon: "/logo.png",
+  },
 };
 
 export default function RootLayout({
