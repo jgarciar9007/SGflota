@@ -35,7 +35,7 @@ export default function LoginPage() {
             if ((email === "admin@sgflota.com" || email === "admin") && password === "admin") {
                 // This shouldn't be needed if initialUsers has the admin, but keeping as safety net
                 // We need to manually set it if login() failed (e.g. if initial data was overwritten)
-                setError("Credenciales inválidas. Intente con admin@sgflota.com");
+                setError("Credenciales inválidas.");
                 setIsLoading(false);
             } else {
                 setError("Credenciales inválidas.");
@@ -78,15 +78,15 @@ export default function LoginPage() {
                 <Card className="border-white/10 bg-black/40 backdrop-blur-xl shadow-2xl">
                     <CardHeader className="space-y-1 text-center">
                         <div className="flex justify-center mb-4">
-                            <div className="p-3 rounded-full bg-primary/20 border border-primary/50">
-                                <Car className="w-8 h-8 text-primary" />
+                            <div className="h-24 w-24 bg-white rounded-full flex items-center justify-center p-2 shadow-lg shadow-primary/20">
+                                <img src="/logo.png" alt="Urban Rentals" className="w-full h-full object-contain" />
                             </div>
                         </div>
                         <CardTitle className="text-3xl font-bold tracking-tight text-white">
-                            SGFlota
+                            Urban Rentals
                         </CardTitle>
                         <CardDescription className="text-gray-400">
-                            Sistema de Gestión de Flota Premium
+                            Acceso al Sistema de Gestión
                         </CardDescription>
                     </CardHeader>
                     <form onSubmit={handleLogin}>
@@ -100,7 +100,7 @@ export default function LoginPage() {
                                 <div className="relative">
                                     <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                                     <Input
-                                        placeholder="admin@sgflota.com"
+                                        placeholder="correo@ejemplo.com"
                                         type="text"
                                         className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-primary/50 focus:ring-primary/20"
                                         required
