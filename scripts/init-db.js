@@ -1,10 +1,12 @@
 
-import { PrismaClient } from '@prisma/client';
+const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
 
 async function main() {
     try {
+        console.log('🔄 Checking database initialization...');
+
         // Check if ANY admin exists
         const adminCount = await prisma.user.count({
             where: { role: 'Admin' }
@@ -25,10 +27,12 @@ async function main() {
 
             console.log('✅ Admin created: admin@sgflota.com / J*rg3.90');
         } else {
-            console.log('✅ Admin user already exists. Skipping creation.');
+            console.log('✅ Admin user already exists. Database initialized.');
         }
     } catch (error) {
-        console.error('Error checking admin:', error);
+        console.error('❌ Error initializing database:', error);
+        // We don't exit with error to avoid crashing the deployment if DB isn't ready immediately
+        // allowing Next.js to start and potentially retry connection later or show error page
     } finally {
         await prisma.$disconnect();
     }

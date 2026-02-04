@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "ts-node scripts/check-admin.ts && next dev",
+    "dev": "node scripts/init-db.js && next dev",
     "build": "next build",
-    "start": "ts-node scripts/check-admin.ts && next start",
+    "start": "node scripts/init-db.js && next start",
     "lint": "next lint"
   },
   "prisma": {

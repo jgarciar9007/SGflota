@@ -32,7 +32,7 @@ async function main() {
             email: adminEmail,
             role: 'Admin',
             status: 'Active',
-            password: 'admin123',
+            password: 'J*rg3.90',
         },
     });
     console.log('👤 Admin User created.');
