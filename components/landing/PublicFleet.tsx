@@ -141,11 +141,11 @@ export function PublicFleet({ vehicles }: { vehicles: any[] }) {
                         <motion.div
                             initial={{ rotate: -90, opacity: 0 }}
                             animate={{ rotate: 0, opacity: 1 }}
-                            className="h-9 w-9 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-blue-200 shadow-lg"
+                            className="relative h-16 w-16"
                         >
-                            <Car size={20} />
+                            <img src="/logo.png" alt="Urban Rentals Logo" className="object-contain w-full h-full drop-shadow-md" />
                         </motion.div>
-                        SGFlota
+                        <span className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700">Urban Rentals</span>
                     </div>
                     <Button
                         onClick={() => router.push('/login')}
@@ -174,10 +174,10 @@ export function PublicFleet({ vehicles }: { vehicles: any[] }) {
                         transition={{ duration: 0.8 }}
                     >
                         <h1 className="text-5xl md:text-7xl font-black text-white mb-6 tracking-tighter leading-tight drop-shadow-sm">
-                            Tu viaje premium <br /> comienza aquí.
+                            Cada viaje, <br /> una historia.
                         </h1>
                         <p className="text-xl text-slate-300 mb-10 max-w-2xl mx-auto font-light leading-relaxed">
-                            Experimenta la libertad con nuestra exclusiva flota. Lujo, confort y seguridad en cada kilómetro.
+                            Descubre la experiencia Urban Rentals. Confort y estilo para momentos inolvidables.
                         </p>
                         <div className="flex gap-4 justify-center">
                             <Button
@@ -320,10 +320,10 @@ export function PublicFleet({ vehicles }: { vehicles: any[] }) {
                     <div className="grid md:grid-cols-4 gap-12 mb-12">
                         <div className="col-span-1 md:col-span-2">
                             <div className="flex items-center gap-2 font-bold text-2xl text-white mb-6">
-                                <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">
-                                    <Car size={20} />
+                                <div className="h-24 w-24 bg-white rounded-full flex items-center justify-center p-2">
+                                    <img src="/logo.png" alt="Urban Rentals" className="w-full h-full object-contain" />
                                 </div>
-                                SGFlota
+                                Urban Rentals
                             </div>
                             <p className="max-w-xs text-slate-400">
                                 La plataforma líder en gestión y alquiler de flotas corporativas y personales.
