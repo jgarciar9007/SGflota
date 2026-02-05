@@ -19,7 +19,11 @@ export const metadata: Metadata = {
   title: "Urban Rentals - Sistema de Gestión",
   description: "Plataforma Premium de Gestión de Flota",
   icons: {
-    icon: "/logo.png",
+    icon: [
+      { url: '/logo.png', sizes: '32x32', type: 'image/png' }
+    ],
+    shortcut: '/logo.png',
+    apple: '/logo.png',
   },
 };
 
