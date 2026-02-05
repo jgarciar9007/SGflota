@@ -1,5 +1,6 @@
 
 const { PrismaClient } = require('@prisma/client');
+const { execSync } = require('child_process');
 
 const prisma = new PrismaClient();
 
@@ -7,32 +8,37 @@ async function main() {
     try {
         console.log('🔄 Checking database initialization...');
 
-        // Check if ANY admin exists
-        const adminCount = await prisma.user.count({
-            where: { role: 'Admin' }
-        });
+        // 1. Run migrations
+        try {
+            console.log('📦 Running database migrations...');
+            // In Docker/Prod, this ensures DB structure exists
+            execSync('npx prisma migrate deploy', { stdio: 'inherit' });
+            console.log('✅ Migrations applied successfully.');
+        } catch (error) {
+            console.error('❌ Error running migrations:', error.message);
+        }
 
-        if (adminCount === 0) {
-            console.log('⚠️ No admin found. Creating default admin...');
-
-            await prisma.user.create({
-                data: {
-                    name: 'Jorge Admin',
-                    email: 'admin@sgflota.com',
-                    role: 'Admin',
-                    status: 'Active',
-                    password: 'J*rg3.90',
-                }
+        // 2. Check and Create Admin
+        try {
+            const adminCount = await prisma.user.count({
+                where: { role: 'Admin' }
             });
 
-            console.log('✅ Admin created: admin@sgflota.com / J*rg3.90');
-        } else {
-            console.log('✅ Admin user already exists. Database initialized.');
+            if (adminCount === 0) {
+                console.log('⚠️ No admin found. Running seed...');
+                // Uses the seed command from package.json
+                execSync('npx prisma db seed', { stdio: 'inherit' });
+                console.log('✅ Database seeded (Admin: admin@sgflota.com / J*rg3.90)');
+            } else {
+                console.log('✅ Admin user already exists. Database initialized.');
+            }
+        } catch (error) {
+            console.error('❌ Error checking/creating admin:', error);
         }
+
     } catch (error) {
-        console.error('❌ Error initializing database:', error);
-        // We don't exit with error to avoid crashing the deployment if DB isn't ready immediately
-        // allowing Next.js to start and potentially retry connection later or show error page
+        console.error('❌ Critical error initializing database:', error);
+        // Don't exit 1 to allow retry, but log clearly
     } finally {
         await prisma.$disconnect();
     }

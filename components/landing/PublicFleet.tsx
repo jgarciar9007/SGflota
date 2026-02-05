@@ -288,7 +288,7 @@ export function PublicFleet({ vehicles }: { vehicles: any[] }) {
                 <div className="absolute top-0 right-0 w-1/2 h-full bg-blue-600/5 blur-[120px] rounded-full pointer-events-none" />
                 <div className="container mx-auto px-4 relative z-10">
                     <div className="text-center mb-16">
-                        <h2 className="text-3xl font-bold mb-4">Experiencia SGFlota</h2>
+                        <h2 className="text-3xl font-bold mb-4">Experiencia Urban Rentals</h2>
                         <p className="text-slate-400 max-w-2xl mx-auto">Más que un alquiler de coches, ofrecemos una solución integral de movilidad.</p>
                     </div>
 
@@ -359,7 +359,7 @@ export function PublicFleet({ vehicles }: { vehicles: any[] }) {
                         </div>
                     </div>
                     <div className="pt-8 border-t border-slate-900 text-center text-sm">
-                        <p>&copy; {new Date().getFullYear()} SGFlota. Todos los derechos reservados.</p>
+                        <p>&copy; {new Date().getFullYear()} Urban Rentals. Todos los derechos reservados.</p>
                     </div>
                 </div>
             </footer>
