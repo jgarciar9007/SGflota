@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { writeFile } from "fs/promises";
 import path from "path";
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
     try {
         const formData = await request.formData();
@@ -26,6 +28,15 @@ export async function POST(request: NextRequest) {
         // Determine upload path
         // Default to 'uploads'
         const uploadDir = path.join(process.cwd(), "public/uploads");
+
+        // Ensure directory exists
+        const { mkdir } = require("fs/promises");
+        try {
+            await mkdir(uploadDir, { recursive: true });
+        } catch (err) {
+            // Ignore error if it already exists (redundant with recursive: true but safe)
+        }
+
         const filePath = path.join(uploadDir, filename);
 
         // Write file
