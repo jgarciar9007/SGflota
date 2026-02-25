@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
     try {
+        console.log('GET /api/settings called'); // Debug log
         let settings = await prisma.companySettings.findUnique({
             where: { id: 1 },
         });
@@ -32,6 +35,7 @@ export async function GET() {
 export async function PUT(request: Request) {
     try {
         const data = await request.json();
+        console.log('PUT /api/settings payload:', data); // Debug log
         // Prevent ID change
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { id, ...updateData } = data;

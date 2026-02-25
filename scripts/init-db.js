@@ -12,8 +12,8 @@ async function main() {
         try {
             console.log('📦 Running database migrations...');
             // In Docker/Prod, this ensures DB structure exists
-            execSync('npx prisma migrate deploy', { stdio: 'inherit' });
-            console.log('✅ Migrations applied successfully.');
+            // execSync('npx prisma migrate deploy', { stdio: 'inherit' });
+            console.log('✅ Migrations check skipped (managed manually).');
         } catch (error) {
             console.error('❌ Error running migrations:', error.message);
         }
