@@ -3,14 +3,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { useData } from "@/context/DataContext";
+import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Car, Lock, Mail } from "lucide-react";
+import { Lock, Mail } from "lucide-react";
 
 export default function LoginPage() {
-    const { login } = useData();
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [email, setEmail] = useState("");
@@ -22,25 +21,23 @@ export default function LoginPage() {
         setIsLoading(true);
         setError("");
 
-        // Simulate login delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        try {
+            const res = await signIn("credentials", {
+                email,
+                password,
+                redirect: false,
+            });
 
-        // Attempt login with DataContext
-        const success = login(email);
-
-        if (success) {
-            router.push("/dashboard");
-        } else {
-            // Fallback for initial admin if not in users list (though DataContext has initial admin)
-            if ((email === "admin@sgflota.com" || email === "admin") && password === "admin") {
-                // This shouldn't be needed if initialUsers has the admin, but keeping as safety net
-                // We need to manually set it if login() failed (e.g. if initial data was overwritten)
-                setError("Credenciales inválidas.");
-                setIsLoading(false);
-            } else {
-                setError("Credenciales inválidas.");
-                setIsLoading(false);
+            if (res?.error) {
+                setError(res.error);
+            } else if (res?.ok) {
+                router.push("/dashboard");
             }
+        } catch (e) {
+            console.error("Login Error", e);
+            setError("Ocurrió un error inesperado.");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -79,6 +76,7 @@ export default function LoginPage() {
                     <CardHeader className="space-y-1 text-center">
                         <div className="flex justify-center mb-4">
                             <div className="h-24 w-24 bg-white rounded-full flex items-center justify-center p-2 shadow-lg shadow-primary/20">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img src="/logo.png" alt="Urban Rentals" className="w-full h-full object-contain" />
                             </div>
                         </div>

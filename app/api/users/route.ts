@@ -1,9 +1,21 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import bcrypt from 'bcrypt';
 
 export async function GET() {
     try {
-        const users = await prisma.user.findMany();
+        const users = await prisma.user.findMany({
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                status: true,
+                avatar: true,
+                createdAt: true,
+                updatedAt: true,
+            }
+        });
         return NextResponse.json(users);
     } catch (error) {
         console.error(error);
@@ -14,8 +26,24 @@ export async function GET() {
 export async function POST(request: Request) {
     try {
         const data = await request.json();
+
+        let hashedPassword = data.password;
+        if (data.password) {
+            hashedPassword = await bcrypt.hash(data.password, 10);
+        }
+
         const user = await prisma.user.create({
-            data,
+            data: {
+                ...data,
+                password: hashedPassword,
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                status: true,
+            }
         });
         return NextResponse.json(user);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -28,10 +56,24 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
     try {
         const data = await request.json();
-        const { id, ...updateData } = data;
+        const { id, password, ...updateData } = data;
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const updatePayload: any = { ...updateData };
+        if (password && password.trim() !== '') {
+            updatePayload.password = await bcrypt.hash(password, 10);
+        }
+
         const user = await prisma.user.update({
             where: { id },
-            data: updateData,
+            data: updatePayload,
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                status: true,
+            }
         });
         return NextResponse.json(user);
     } catch (error) {

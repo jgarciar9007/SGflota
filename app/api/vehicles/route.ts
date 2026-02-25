@@ -1,3 +1,5 @@
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
@@ -60,8 +62,8 @@ export async function DELETE(request: Request) {
         }
 
         // 1. Auth Check
-        const role = request.headers.get('x-user-role');
-        if (role !== 'Admin') {
+        const session = await getServerSession(authOptions);
+        if (!session || session.user.role !== 'Admin') {
             return NextResponse.json({ error: 'Acceso denegado. Solo administradores pueden eliminar.' }, { status: 403 });
         }
 

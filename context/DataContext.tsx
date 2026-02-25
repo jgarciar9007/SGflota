@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { useSession, signOut } from "next-auth/react";
 
 // Types
 export interface Vehicle {
@@ -325,6 +326,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const [driverPayments, setDriverPayments] = useState<DriverPayment[]>([]);
     const [payrolls, setPayrolls] = useState<Payroll[]>([]);
 
+    const { data: session, status } = useSession();
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -381,26 +383,30 @@ export function DataProvider({ children }: { children: ReactNode }) {
     };
 
     useEffect(() => {
-        fetchData();
-        // Load logged user from session storage or similar (simplified)
-        const storedUser = localStorage.getItem("currentUser");
-        if (storedUser) {
-            try {
-                setCurrentUser(JSON.parse(storedUser));
-            } catch (e) {
-                console.error(e);
-            }
+        if (status === "authenticated" && session?.user) {
+            setCurrentUser({
+                id: session.user.id,
+                email: session.user.email || "",
+                name: session.user.name || "",
+                role: session.user.role as "Admin" | "User" | "Registrar",
+                status: session.user.status as "Active" | "Inactive",
+            });
+            fetchData();
+        } else if (status === "unauthenticated") {
+            setCurrentUser(null);
+            setIsLoading(false);
         }
-    }, []);
+    }, [status, session]);
 
     // Helper generic fetch
     const apiCall = async (endpoint: string, method: string, body?: any) => {
+        if (!currentUser) throw new Error("Not authenticated");
+
         const res = await fetch(endpoint, {
             method,
             cache: 'no-store',
             headers: {
                 'Content-Type': 'application/json',
-                'x-user-role': currentUser?.role || ''
             },
             body: body ? JSON.stringify(body) : undefined
         });
@@ -665,18 +671,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
     // Auth Methods
     const login = (email: string) => {
-        const user = users.find(u => u.email === email && u.status === "Active");
-        if (user) {
-            setCurrentUser(user);
-            localStorage.setItem("currentUser", JSON.stringify(user));
-            return true;
-        }
-        return false;
+        // Now handled by next-auth on the login page
+        return true;
     };
 
-    const logout = () => {
+    const logout = async () => {
         setCurrentUser(null);
-        localStorage.removeItem("currentUser");
+        await signOut({ callbackUrl: '/login' });
     };
 
     const canEdit = (user: User | null) => {

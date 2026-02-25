@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Car, LayoutDashboard, Settings, Calendar, LogOut, CreditCard, Wrench, FileText, MessageSquare } from "lucide-react";
+import { signOut } from "next-auth/react";
 
 const sidebarItems = [
     { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
@@ -25,9 +26,8 @@ export function Sidebar() {
     const router = useRouter();
     const { currentUser, canAccessSettings } = useData();
 
-    const handleLogout = () => {
-        localStorage.removeItem("isAuthenticated");
-        router.push("/login");
+    const handleLogout = async () => {
+        await signOut({ callbackUrl: '/login' });
     };
 
     return (
