@@ -157,48 +157,75 @@ export function PublicFleet({ vehicles }: { vehicles: any[] }) {
             </header>
 
             {/* Hero Section */}
-            <section className="relative h-[600px] flex items-center justify-center bg-slate-900 overflow-hidden">
+            <section className="relative min-h-[600px] flex items-center justify-center bg-slate-900 overflow-hidden py-20 lg:py-0">
                 <div className="absolute inset-0 z-0">
-                    <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/90 to-slate-900/60 z-10" />
-                    <motion.div
-                        initial={{ scale: 1.1 }}
-                        animate={{ scale: 1 }}
-                        transition={{ duration: 10 }}
-                        className="w-full h-full bg-[url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center"
-                    />
+                    <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 z-10" />
+                    {/* Decorative blurred circles behind the content */}
+                    <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/20 blur-[150px] rounded-full mix-blend-screen pointer-events-none" />
+                    <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] bg-indigo-600/20 blur-[150px] rounded-full mix-blend-screen pointer-events-none" />
                 </div>
-                <div className="container relative z-20 text-center px-4 max-w-4xl mx-auto">
-                    <motion.div
-                        initial={{ y: 30, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ duration: 0.8 }}
-                    >
-                        <h1 className="text-5xl md:text-7xl font-black text-white mb-6 tracking-tighter leading-tight drop-shadow-sm">
-                            Cada viaje, <br /> una historia.
-                        </h1>
-                        <p className="text-xl text-slate-300 mb-10 max-w-2xl mx-auto font-light leading-relaxed">
-                            Descubre la experiencia Urban Rentals. Confort y estilo para momentos inolvidables.
-                        </p>
-                        <div className="flex gap-4 justify-center">
-                            <Button
-                                size="lg"
-                                className="bg-blue-600 hover:bg-blue-500 text-white rounded-full px-8 h-12 text-lg font-semibold shadow-blue-900/50 shadow-lg transition-transform hover:scale-105 active:scale-95"
-                                onClick={() => {
-                                    document.getElementById('fleet')?.scrollIntoView({ behavior: 'smooth' });
-                                }}
+                <div className="container relative z-20 px-4 mx-auto">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                        {/* Text Content */}
+                        <motion.div
+                            initial={{ x: -30, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            transition={{ duration: 0.8 }}
+                            className="order-2 lg:order-1 text-center lg:text-left"
+                        >
+                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 text-blue-400 font-medium text-sm mb-6 border border-blue-500/20">
+                                <Star size={14} className="fill-blue-400" /> Premium Rentals en Guinea Ecuatorial
+                            </div>
+                            <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-6 tracking-tighter leading-tight drop-shadow-sm">
+                                Tu viaje, <br className="hidden lg:block" /> a otro <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">nivel.</span>
+                            </h1>
+                            <p className="text-lg md:text-xl text-slate-300 mb-10 max-w-xl mx-auto lg:mx-0 font-light leading-relaxed">
+                                Ofrecemos la flota más moderna y exclusiva. Tarifas competitivas, confort superior y atención personalizada las 24 horas para hacer de tu viaje una experiencia inolvidable.
+                            </p>
+                            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                                <Button
+                                    size="lg"
+                                    className="bg-blue-600 hover:bg-blue-500 text-white rounded-full px-8 h-14 text-lg font-semibold shadow-blue-900/50 shadow-lg transition-transform hover:scale-105 active:scale-95 flex items-center gap-2"
+                                    onClick={() => {
+                                        document.getElementById('fleet')?.scrollIntoView({ behavior: 'smooth' });
+                                    }}
+                                >
+                                    <Car size={20} />
+                                    Ver Flota Disponible
+                                </Button>
+                                <Button
+                                    size="lg"
+                                    variant="outline"
+                                    className="bg-white/5 hover:bg-white/10 text-white border-white/10 rounded-full px-8 h-14 text-lg backdrop-blur-sm transition-transform hover:scale-105 active:scale-95"
+                                    onClick={() => setIsContactModalOpen(true)}
+                                >
+                                    Asesoría Personalizada
+                                </Button>
+                            </div>
+                        </motion.div>
+
+                        {/* Image Content */}
+                        <motion.div
+                            initial={{ x: 30, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            transition={{ duration: 0.8, delay: 0.2 }}
+                            className="order-1 lg:order-2 flex justify-center lg:justify-end relative"
+                        >
+                            <motion.div
+                                animate={{ y: [-15, 15, -15] }}
+                                transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+                                className="relative z-10 w-full max-w-lg lg:max-w-xl"
                             >
-                                Ver Disponibilidad
-                            </Button>
-                            <Button
-                                size="lg"
-                                variant="outline"
-                                className="bg-white/10 hover:bg-white/20 text-white border-white/20 rounded-full px-8 h-12 text-lg backdrop-blur-sm transition-transform hover:scale-105 active:scale-95"
-                                onClick={() => setIsContactModalOpen(true)}
-                            >
-                                Contáctanos
-                            </Button>
-                        </div>
-                    </motion.div>
+                                <img
+                                    src="https://images.unsplash.com/photo-1503376712341-ea71661d1544?q=80&w=2670&auto=format&fit=crop"
+                                    alt="Modern Luxury Car"
+                                    className="w-full h-auto drop-shadow-2xl rounded-2xl border border-white/10"
+                                />
+                                {/* Optional overlay gradient for the image */}
+                                <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-slate-900/40 to-transparent pointer-events-none" />
+                            </motion.div>
+                        </motion.div>
+                    </div>
                 </div>
             </section>
 

@@ -50,7 +50,7 @@ fi
 echo "Configurando archivo .env..."
 cat > .env <<EOF
 DATABASE_URL="postgresql://jorge:J*rg3.90@localhost:5432/urban-rentals?schema=public"
-NEXTAUTH_URL="http://ruta-rentals.com"
+NEXTAUTH_URL="https://ruta-rentals.es"
 NEXTAUTH_SECRET="$(openssl rand -hex 32)"
 EOF
 
@@ -89,11 +89,11 @@ pm2 startup systemd -u root --hp /root || true
 pm2 save
 
 # 7. Configuración de Nginx
-echo "Configurando Nginx para el dominio ruta-rentals.com..."
-cat > /etc/nginx/sites-available/ruta-rentals.com <<EOF
+echo "Configurando Nginx para el dominio ruta-rentals.es..."
+cat > /etc/nginx/sites-available/ruta-rentals.es <<EOF
 server {
     listen 80;
-    server_name ruta-rentals.com www.ruta-rentals.com;
+    server_name ruta-rentals.es www.ruta-rentals.es;
 
     location / {
         proxy_pass http://localhost:3000;
@@ -107,7 +107,7 @@ server {
 EOF
 
 # Habilitar el sitio y deshabilitar el default
-ln -sf /etc/nginx/sites-available/ruta-rentals.com /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/ruta-rentals.es /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
 rm -f /etc/nginx/sites-enabled/SGflota || true
 
