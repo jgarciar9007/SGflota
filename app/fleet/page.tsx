@@ -11,7 +11,7 @@ import Image from "next/image";
 import { formatCurrency } from "@/lib/utils";
 
 export default function FleetPage() {
-    const { vehicles, addVehicle, deleteVehicle, currentUser, canDelete, owners, rentals, maintenances } = useData();
+    const { vehicles, addVehicle, updateVehicle, deleteVehicle, currentUser, canDelete, owners, rentals, maintenances } = useData();
     const [showAddModal, setShowAddModal] = useState(false);
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
     const [uploading, setUploading] = useState(false);
@@ -19,6 +19,7 @@ export default function FleetPage() {
     const [selectedVehicleStats, setSelectedVehicleStats] = useState<Vehicle | null>(null);
 
     const [formData, setFormData] = useState({
+        id: "",
         name: "",
         type: "Gasolina",
         range: "",
@@ -26,6 +27,7 @@ export default function FleetPage() {
         plate: "",
         year: new Date().getFullYear(),
         image: "",
+        images: [] as string[],
         ownership: "Propia",
         ownerName: "",
         ownerDni: ""
@@ -51,7 +53,11 @@ export default function FleetPage() {
             }
 
             const data = await response.json();
-            setFormData(prev => ({ ...prev, image: data.url }));
+            setFormData(prev => ({
+                ...prev,
+                image: prev.image ? prev.image : data.url,
+                images: [...prev.images, data.url]
+            }));
         } catch (error) {
             console.error('Upload error:', error);
             alert('Error al subir la imagen. Por favor intenta de nuevo.');
@@ -62,15 +68,25 @@ export default function FleetPage() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        addVehicle({
-            ...formData,
-            price: parseFloat(formData.price),
-            year: parseInt(formData.year.toString()),
-            status: "Disponible",
-            ownership: formData.ownership as "Propia" | "Tercero",
-        });
+        const { id, ...vehicleData } = formData;
+
+        const payload = {
+            ...vehicleData,
+            price: parseFloat(vehicleData.price),
+            year: parseInt(vehicleData.year.toString()),
+            status: "Disponible" as const,
+            ownership: vehicleData.ownership as "Propia" | "Tercero",
+        };
+
+        if (id) {
+            updateVehicle(id, payload);
+        } else {
+            addVehicle(payload);
+        }
+
         setShowAddModal(false);
         setFormData({
+            id: "",
             name: "",
             type: "Gasolina",
             range: "",
@@ -78,9 +94,22 @@ export default function FleetPage() {
             plate: "",
             year: new Date().getFullYear(),
             image: "",
+            images: [],
             ownership: "Propia",
             ownerName: "",
             ownerDni: ""
+        });
+    };
+
+    const removeImage = (indexToRemove: number) => {
+        setFormData(prev => {
+            const newImages = prev.images.filter((_, idx) => idx !== indexToRemove);
+            return {
+                ...prev,
+                images: newImages,
+                // Update main image if we removed it
+                image: prev.image === prev.images[indexToRemove] ? (newImages[0] || "") : prev.image
+            };
         });
     };
 
@@ -221,6 +250,7 @@ export default function FleetPage() {
                                     <div className="flex gap-2">
                                         <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground hover:bg-muted" onClick={() => {
                                             setFormData({
+                                                id: car.id,
                                                 name: car.name,
                                                 type: car.type,
                                                 range: car.range || "",
@@ -228,6 +258,7 @@ export default function FleetPage() {
                                                 plate: car.plate,
                                                 year: car.year,
                                                 image: car.image || "",
+                                                images: car.images || [],
                                                 ownership: car.ownership,
                                                 ownerName: car.ownerName || "",
                                                 ownerDni: car.ownerDni || ""
@@ -302,6 +333,7 @@ export default function FleetPage() {
                                             </Button>
                                             <Button variant="ghost" size="sm" onClick={() => {
                                                 setFormData({
+                                                    id: car.id,
                                                     name: car.name,
                                                     type: car.type,
                                                     range: car.range || "",
@@ -309,6 +341,7 @@ export default function FleetPage() {
                                                     plate: car.plate,
                                                     year: car.year,
                                                     image: car.image || "",
+                                                    images: car.images || [],
                                                     ownership: car.ownership,
                                                     ownerName: car.ownerName || "",
                                                     ownerDni: car.ownerDni || ""
@@ -471,21 +504,44 @@ export default function FleetPage() {
                                         </div>
                                     )}
                                     <div>
-                                        <label className="text-sm text-foreground font-medium">Imagen del Vehículo</label>
-                                        <div className="mt-2 space-y-2">
-                                            {formData.image && (
-                                                <Image
-                                                    src={formData.image}
-                                                    alt="Preview"
-                                                    width={400}
-                                                    height={128}
-                                                    className="h-32 w-full object-cover rounded-lg"
-                                                    unoptimized
-                                                />
+                                        <label className="text-sm text-foreground font-medium">Imágenes del Vehículo</label>
+                                        <div className="mt-2 space-y-4">
+                                            {/* Grid layout for images */}
+                                            {formData.images && formData.images.length > 0 && (
+                                                <div className="grid grid-cols-3 gap-2">
+                                                    {formData.images.map((imgUrl, idx) => (
+                                                        <div key={idx} className="relative group">
+                                                            <Image
+                                                                src={imgUrl}
+                                                                alt={`Preview ${idx + 1}`}
+                                                                width={128}
+                                                                height={128}
+                                                                className={`h-24 w-full object-cover rounded-lg border-2 ${formData.image === imgUrl ? 'border-primary' : 'border-border'}`}
+                                                                unoptimized
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => removeImage(idx)}
+                                                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                            >
+                                                                <X className="h-3 w-3" />
+                                                            </button>
+                                                            {formData.image !== imgUrl && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setFormData(p => ({ ...p, image: imgUrl }))}
+                                                                    className="absolute bottom-1 left-1 bg-blue-500 text-white rounded text-[10px] px-1 py-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                >
+                                                                    Principal
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             )}
                                             <div className="flex gap-2">
-                                                <label className="flex-1">
-                                                    <div className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md cursor-pointer transition-colors">
+                                                <label className="flex-1 w-full">
+                                                    <div className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md cursor-pointer transition-colors w-full">
                                                         {uploading ? (
                                                             <>
                                                                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -494,26 +550,40 @@ export default function FleetPage() {
                                                         ) : (
                                                             <>
                                                                 <Upload className="h-4 w-4" />
-                                                                Subir desde PC
+                                                                Subir Imágenes
                                                             </>
                                                         )}
                                                     </div>
                                                     <input
                                                         type="file"
                                                         accept="image/*"
+                                                        multiple
                                                         onChange={handleFileUpload}
                                                         className="hidden"
                                                         disabled={uploading}
                                                     />
                                                 </label>
                                             </div>
-                                            <Input
-                                                value={formData.image}
-                                                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                                                placeholder="O ingresa la URL de la imagen"
-                                                className="bg-background border-input text-foreground"
-                                                required
-                                            />
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    placeholder="URL de imagen a integrar manualmente"
+                                                    className="bg-background border-input text-foreground flex-1"
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            e.preventDefault();
+                                                            const val = e.currentTarget.value;
+                                                            if (val) {
+                                                                setFormData(p => ({
+                                                                    ...p,
+                                                                    images: [...p.images, val],
+                                                                    image: p.image ? p.image : val
+                                                                }));
+                                                                e.currentTarget.value = "";
+                                                            }
+                                                        }
+                                                    }}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 </CardContent>

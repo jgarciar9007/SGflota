@@ -11,6 +11,7 @@ export interface Vehicle {
     range: string;
     price: number;
     image: string;
+    images?: string[];
     status: "Disponible" | "Rentado" | "Mantenimiento";
     plate: string;
     year: number;

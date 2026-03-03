@@ -25,6 +25,7 @@ export async function POST(request: Request) {
                 range: data.range,
                 price: data.price,
                 image: data.image,
+                images: data.images || [],
                 status: data.status,
                 plate: data.plate,
                 year: data.year,
