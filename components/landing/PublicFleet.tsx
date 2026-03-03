@@ -275,8 +275,9 @@ export function PublicFleet({ vehicles }: { vehicles: any[] }) {
                                         <p className="text-sm text-slate-500 font-medium">{vehicle.year} • {vehicle.plate}</p>
                                     </div>
                                     <div className="text-right">
-                                        <div className="text-2xl font-black text-slate-900">{formatCurrency(vehicle.price)}</div>
-                                        <div className="text-xs text-slate-400 font-medium">/ día</div>
+                                        <div className="text-xs text-slate-400 font-medium mb-1 uppercase tracking-wider">Desde</div>
+                                        <div className="text-2xl font-black text-slate-900 leading-none">{formatCurrency(vehicle.price)}</div>
+                                        <div className="text-xs text-slate-400 font-medium mt-1">/ día</div>
                                     </div>
                                 </div>
 

@@ -125,5 +125,5 @@ ufw allow 443/tcp
 
 echo "================================================="
 echo "¡Despliegue finalizado exitosamente!"
-echo "Tu sistema debería estar escuchando en: http://ruta-rentals.com"
+echo "Tu sistema debería estar escuchando en: https://urban-rentals.es"
 echo "================================================="
