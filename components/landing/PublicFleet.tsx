@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Car, Fuel, Map, User, MapPin, ChevronRight, Star, ChevronLeft, Circle, CircleDot } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -17,6 +17,14 @@ function VehicleCard({ vehicle, handleBookClick, itemVariants }: { vehicle: any,
     const imagesFromVehicle = Array.isArray(vehicle.images) ? vehicle.images : (typeof vehicle.images === 'string' ? JSON.parse(vehicle.images || "[]") : []);
     const images = imagesFromVehicle.length > 0 ? imagesFromVehicle : (vehicle.image ? [vehicle.image] : []);
     const [currentIndex, setCurrentIndex] = useState(0);
+
+    useEffect(() => {
+        if (images.length <= 1) return;
+        const timer = setInterval(() => {
+            setCurrentIndex((prev) => (prev + 1) % images.length);
+        }, 4000);
+        return () => clearInterval(timer);
+    }, [images.length]);
 
     const nextImage = (e: React.MouseEvent) => {
         e.stopPropagation();
