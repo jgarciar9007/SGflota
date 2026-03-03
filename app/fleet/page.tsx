@@ -419,6 +419,7 @@ export default function FleetPage() {
                                                 className="w-full h-10 px-3 rounded-md bg-background border border-input text-foreground mt-1"
                                             >
                                                 <option value="Gasolina">Gasolina</option>
+                                                <option value="Diésel">Diésel</option>
                                                 <option value="Eléctrico">Eléctrico</option>
                                                 <option value="Híbrido">Híbrido</option>
                                             </select>

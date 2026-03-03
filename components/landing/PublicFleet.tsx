@@ -14,7 +14,8 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 
 function VehicleCard({ vehicle, handleBookClick, itemVariants }: { vehicle: any, handleBookClick: (v: any) => void, itemVariants: any }) {
-    const images = vehicle.images && vehicle.images.length > 0 ? vehicle.images : (vehicle.image ? [vehicle.image] : []);
+    const imagesFromVehicle = Array.isArray(vehicle.images) ? vehicle.images : (typeof vehicle.images === 'string' ? JSON.parse(vehicle.images || "[]") : []);
+    const images = imagesFromVehicle.length > 0 ? imagesFromVehicle : (vehicle.image ? [vehicle.image] : []);
     const [currentIndex, setCurrentIndex] = useState(0);
 
     const nextImage = (e: React.MouseEvent) => {
