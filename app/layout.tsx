@@ -17,11 +17,11 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Urban Rentals - Alquiler de Vehículos en Guinea Ecuatorial",
+  title: "Ruta Rentals G.E. - Alquiler de Vehículos en Guinea Ecuatorial",
   description: "Plataforma Premium de Gestión de Flota y Alquiler de Autos en Guinea Ecuatorial. Ofrecemos vehículos modernos, seguros y confortables.",
   keywords: "alquiler de autos, guinea ecuatorial, renta de vehiculos, malabo, bata, urban rentals",
   openGraph: {
-    title: "Urban Rentals - Alquiler de Vehículos en Guinea Ecuatorial",
+    title: "Ruta Rentals G.E. - Alquiler de Vehículos en Guinea Ecuatorial",
     description: "La mejor opción para alquiler de autos en Guinea Ecuatorial.",
     url: "https://ruta-rentals.es",
     siteName: "Urban Rentals",
