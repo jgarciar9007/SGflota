@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Ruta Rentals G.E. - Alquiler de Vehículos en Guinea Ecuatorial",
     description: "La mejor opción para alquiler de autos en Guinea Ecuatorial.",
-    url: "https://ruta-rentals.es",
+    url: "https://urban-rentals.es",
     siteName: "Urban Rentals",
     images: [
       {
