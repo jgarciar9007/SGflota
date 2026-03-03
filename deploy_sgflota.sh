@@ -50,7 +50,7 @@ fi
 echo "Configurando archivo .env..."
 cat > .env <<EOF
 DATABASE_URL="postgresql://jorge:J*rg3.90@localhost:5432/urban-rentals?schema=public"
-NEXTAUTH_URL="http://urban-rentals.es"
+NEXTAUTH_URL="http://187.77.163.74"
 NEXTAUTH_SECRET="$(openssl rand -hex 32)"
 EOF
 

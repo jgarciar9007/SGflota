@@ -33,9 +33,15 @@ export default function LoginPage() {
             } else if (res?.ok) {
                 router.push("/dashboard");
             }
-        } catch (e) {
+        } catch (e: any) {
             console.error("Login Error", e);
-            setError("Ocurrió un error inesperado.");
+            if (e instanceof Error) {
+                setError(`Error de conexión: ${e.message}`);
+            } else if (typeof e === 'object' && e !== null) {
+                setError(`Error de red o CORS: ${JSON.stringify(e)}`);
+            } else {
+                setError("Ocurrió un error inesperado al contactar con el servidor.");
+            }
         } finally {
             setIsLoading(false);
         }
