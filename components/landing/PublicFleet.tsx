@@ -323,40 +323,30 @@ export function PublicFleet({ vehicles }: { vehicles: any[] }) {
                                 transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
                                 className="relative z-10 w-full max-w-lg lg:max-w-xl"
                             >
-                                <div className="relative w-full aspect-[4/3] flex items-center justify-center">
-                                    {/* Glowing Background */}
-                                    <div className="absolute inset-0 bg-blue-600/20 blur-[100px] rounded-full mix-blend-screen animate-pulse pointer-events-none" />
+                                <div className="relative w-full h-full min-h-[400px] flex items-center justify-center lg:justify-end">
 
-                                    {/* Moving Car Container */}
-                                    <div className="relative w-full max-w-[600px] lg:max-w-[700px] flex items-center justify-center z-10 perspective-1000">
+                                    {/* Moving Speed Lines Container (Behind Car) */}
+                                    <div className="absolute inset-y-0 right-0 w-[150%] max-w-[1200px] pointer-events-none z-0 overflow-hidden flex flex-col justify-center gap-12">
+                                        <motion.div className="w-[800px] h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent blur-[2px] opacity-70"
+                                            animate={{ x: [800, -1000], opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 2.5, ease: "linear" }} />
+                                        <motion.div className="w-[1000px] h-2 bg-gradient-to-r from-transparent via-cyan-400 to-transparent blur-[3px] opacity-50"
+                                            animate={{ x: [1000, -1200], opacity: [0, 0.8, 0] }} transition={{ repeat: Infinity, duration: 3, delay: 0.8, ease: "linear" }} />
+                                        <motion.div className="w-[600px] h-1.5 bg-gradient-to-r from-transparent via-indigo-500 to-transparent blur-[1px] opacity-80"
+                                            animate={{ x: [600, -800], opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 2, delay: 1.5, ease: "linear" }} />
+                                        <motion.div className="w-[900px] h-1 bg-gradient-to-r from-transparent via-blue-400 to-transparent blur-[2px] opacity-60"
+                                            animate={{ x: [900, -1100], opacity: [0, 0.9, 0] }} transition={{ repeat: Infinity, duration: 3.5, delay: 0.3, ease: "linear" }} />
+                                    </div>
 
-                                        {/* Speed lines (BEHIND CAR -> z-0) */}
-                                        <div className="absolute inset-0 z-0 overflow-visible pointer-events-none">
-                                            <motion.div className="absolute right-[-20%] top-[30%] w-[300px] h-1.5 bg-gradient-to-l from-blue-400 to-transparent blur-[1px] rounded-full"
-                                                animate={{ x: [200, -800], opacity: [0, 0.8, 0] }} transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }} />
-                                            <motion.div className="absolute right-[-10%] top-[50%] w-[400px] h-2 bg-gradient-to-l from-indigo-500 to-transparent blur-[2px] rounded-full"
-                                                animate={{ x: [300, -900], opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 2.2, delay: 0.2, ease: "linear" }} />
-                                            <motion.div className="absolute right-[-40%] top-[70%] w-[250px] h-1 bg-gradient-to-l from-blue-300 to-transparent blur-[1px] rounded-full"
-                                                animate={{ x: [100, -700], opacity: [0, 0.6, 0] }} transition={{ repeat: Infinity, duration: 1.8, delay: 0.5, ease: "linear" }} />
-                                            <motion.div className="absolute right-[-30%] top-[85%] w-[350px] h-1.5 bg-gradient-to-l from-cyan-400 to-transparent blur-[1.5px] rounded-full"
-                                                animate={{ x: [250, -850], opacity: [0, 0.9, 0] }} transition={{ repeat: Infinity, duration: 1.6, delay: 0.8, ease: "linear" }} />
-                                        </div>
-
-                                        {/* Main Body (Hovering Car Image -> z-20) */}
-                                        <motion.div
-                                            className="relative z-20 w-full rounded-[2rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/5"
-                                            animate={{ y: [-12, 12, -12] }}
-                                            transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
-                                        >
-                                            <img
-                                                src="https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=80&w=2670&auto=format&fit=crop"
-                                                alt="Urban Rentals Premium Fleet"
-                                                className="w-full h-auto object-cover transform scale-105 hover:scale-110 transition-transform duration-700"
-                                            />
-                                            {/* Sleek Gradient Overlay to blend with the dark background */}
-                                            <div className="absolute inset-0 bg-gradient-to-t from-[#0B1021] via-transparent to-transparent pointer-events-none" />
-                                            <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/10 to-transparent pointer-events-none mix-blend-overlay" />
-                                        </motion.div>
+                                    {/* Main Body (Static Car Image -> z-10) */}
+                                    <div className="relative z-10 w-full max-w-[650px] aspect-[16/10] rounded-3xl overflow-hidden shadow-2xl border border-white/5">
+                                        <img
+                                            src="https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=80&w=2670&auto=format&fit=crop"
+                                            alt="Urban Rentals Premium Fleet"
+                                            className="w-full h-full object-cover object-center"
+                                        />
+                                        {/* Subtle overlay to blend perfectly with dark blue background */}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A] via-transparent to-transparent opacity-80 pointer-events-none" />
+                                        <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-[#0F172A] opacity-30 pointer-events-none" />
                                     </div>
                                 </div>
                             </motion.div>
