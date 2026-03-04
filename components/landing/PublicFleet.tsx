@@ -338,38 +338,18 @@ export function PublicFleet({ vehicles }: { vehicles: any[] }) {
                                         <motion.div className="absolute right-full top-3/4 w-24 h-1 bg-gradient-to-l from-blue-300 to-transparent opacity-50 rounded-full"
                                             animate={{ x: [450, -150], opacity: [0, 0.6, 0] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0.4, ease: "linear" }} />
 
-                                        {/* Main Body (Hovering Chassis) */}
+                                        {/* Main Body (Hovering Car Image) */}
                                         <motion.div
-                                            className="relative z-20 w-60 h-60 bg-slate-900/60 backdrop-blur-xl rounded-[40px] border border-blue-500/30 flex items-center justify-center shadow-[0_0_50px_rgba(37,99,235,0.2)] overflow-hidden"
-                                            animate={{ boxShadow: ['0 0 30px rgba(37,99,235,0.2)', '0 0 60px rgba(37,99,235,0.5)', '0 0 30px rgba(37,99,235,0.2)'] }}
-                                            transition={{ repeat: Infinity, duration: 3 }}
+                                            className="relative z-20 w-full max-w-md rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(37,99,235,0.3)] border border-white/10"
+                                            animate={{ y: [-8, 8, -8] }}
+                                            transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
                                         >
-                                            <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/10 to-transparent" />
-                                            <img src="/logo.png" alt="Urban Rentals Animado" className="w-48 h-48 object-contain drop-shadow-[0_0_20px_rgba(255,255,255,1)] relative z-10" />
-                                        </motion.div>
-
-                                        {/* Car Base Line */}
-                                        <div className="absolute -bottom-2 left-0 right-0 h-1.5 bg-gradient-to-r from-transparent via-blue-500 to-transparent rounded-full shadow-[0_0_15px_rgba(59,130,246,0.8)]" />
-
-                                        {/* Wheels */}
-                                        <motion.div
-                                            animate={{ rotate: 360 }}
-                                            transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
-                                            className="absolute -bottom-8 left-12 w-16 h-16 rounded-full border-4 border-slate-900 bg-slate-800 shadow-[0_0_25px_rgba(37,99,235,0.6)] flex items-center justify-center z-30"
-                                        >
-                                            <div className="w-8 h-8 rounded-full border-2 border-dashed border-blue-400 flex items-center justify-center">
-                                                <div className="w-2 h-2 bg-blue-300 rounded-full" />
-                                            </div>
-                                        </motion.div>
-
-                                        <motion.div
-                                            animate={{ rotate: 360 }}
-                                            transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
-                                            className="absolute -bottom-8 right-12 w-16 h-16 rounded-full border-4 border-slate-900 bg-slate-800 shadow-[0_0_25px_rgba(37,99,235,0.6)] flex items-center justify-center z-30"
-                                        >
-                                            <div className="w-8 h-8 rounded-full border-2 border-dashed border-blue-400 flex items-center justify-center">
-                                                <div className="w-2 h-2 bg-blue-300 rounded-full" />
-                                            </div>
+                                            <img
+                                                src="https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&q=80&w=2000"
+                                                alt="Urban Rentals Premium Car"
+                                                className="w-full h-auto object-cover"
+                                            />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent pointer-events-none" />
                                         </motion.div>
                                     </div>
                                 </div>
