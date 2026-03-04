@@ -324,32 +324,38 @@ export function PublicFleet({ vehicles }: { vehicles: any[] }) {
                                 className="relative z-10 w-full max-w-lg lg:max-w-xl"
                             >
                                 <div className="relative w-full aspect-[4/3] flex items-center justify-center">
-                                    {/* Glowing Background Glow */}
-                                    <div className="absolute inset-0 bg-blue-600/20 blur-[80px] rounded-full mix-blend-screen animate-pulse" />
+                                    {/* Glowing Background */}
+                                    <div className="absolute inset-0 bg-blue-600/20 blur-[100px] rounded-full mix-blend-screen animate-pulse pointer-events-none" />
 
                                     {/* Moving Car Container */}
-                                    <div className="relative w-full max-w-[400px] h-[200px] flex items-center justify-center z-10">
+                                    <div className="relative w-full max-w-[600px] lg:max-w-[700px] flex items-center justify-center z-10 perspective-1000">
 
-                                        {/* Speed lines */}
-                                        <motion.div className="absolute right-full top-1/4 w-32 h-1 bg-gradient-to-l from-blue-400 to-transparent opacity-50 rounded-full"
-                                            animate={{ x: [500, -200], opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }} />
-                                        <motion.div className="absolute right-full top-2/4 w-48 h-1 bg-gradient-to-l from-indigo-400 to-transparent opacity-50 rounded-full"
-                                            animate={{ x: [600, -300], opacity: [0, 0.8, 0] }} transition={{ repeat: Infinity, duration: 2, delay: 0.2, ease: "linear" }} />
-                                        <motion.div className="absolute right-full top-3/4 w-24 h-1 bg-gradient-to-l from-blue-300 to-transparent opacity-50 rounded-full"
-                                            animate={{ x: [450, -150], opacity: [0, 0.6, 0] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0.4, ease: "linear" }} />
+                                        {/* Speed lines (BEHIND CAR -> z-0) */}
+                                        <div className="absolute inset-0 z-0 overflow-visible pointer-events-none">
+                                            <motion.div className="absolute right-[-20%] top-[30%] w-[300px] h-1.5 bg-gradient-to-l from-blue-400 to-transparent blur-[1px] rounded-full"
+                                                animate={{ x: [200, -800], opacity: [0, 0.8, 0] }} transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }} />
+                                            <motion.div className="absolute right-[-10%] top-[50%] w-[400px] h-2 bg-gradient-to-l from-indigo-500 to-transparent blur-[2px] rounded-full"
+                                                animate={{ x: [300, -900], opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 2.2, delay: 0.2, ease: "linear" }} />
+                                            <motion.div className="absolute right-[-40%] top-[70%] w-[250px] h-1 bg-gradient-to-l from-blue-300 to-transparent blur-[1px] rounded-full"
+                                                animate={{ x: [100, -700], opacity: [0, 0.6, 0] }} transition={{ repeat: Infinity, duration: 1.8, delay: 0.5, ease: "linear" }} />
+                                            <motion.div className="absolute right-[-30%] top-[85%] w-[350px] h-1.5 bg-gradient-to-l from-cyan-400 to-transparent blur-[1.5px] rounded-full"
+                                                animate={{ x: [250, -850], opacity: [0, 0.9, 0] }} transition={{ repeat: Infinity, duration: 1.6, delay: 0.8, ease: "linear" }} />
+                                        </div>
 
-                                        {/* Main Body (Hovering Car Image) */}
+                                        {/* Main Body (Hovering Car Image -> z-20) */}
                                         <motion.div
-                                            className="relative z-20 w-full max-w-md rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(37,99,235,0.3)] border border-white/10"
-                                            animate={{ y: [-8, 8, -8] }}
-                                            transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                                            className="relative z-20 w-full rounded-[2rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/5"
+                                            animate={{ y: [-12, 12, -12] }}
+                                            transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
                                         >
                                             <img
-                                                src="https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&q=80&w=2000"
-                                                alt="Urban Rentals Premium Car"
-                                                className="w-full h-auto object-cover"
+                                                src="https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=80&w=2670&auto=format&fit=crop"
+                                                alt="Urban Rentals Premium Fleet"
+                                                className="w-full h-auto object-cover transform scale-105 hover:scale-110 transition-transform duration-700"
                                             />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent pointer-events-none" />
+                                            {/* Sleek Gradient Overlay to blend with the dark background */}
+                                            <div className="absolute inset-0 bg-gradient-to-t from-[#0B1021] via-transparent to-transparent pointer-events-none" />
+                                            <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/10 to-transparent pointer-events-none mix-blend-overlay" />
                                         </motion.div>
                                     </div>
                                 </div>
