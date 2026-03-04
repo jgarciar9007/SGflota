@@ -340,7 +340,7 @@ export function PublicFleet({ vehicles }: { vehicles: any[] }) {
                                     {/* Main Body (Static Car Image -> z-10) */}
                                     <div className="relative z-10 w-full max-w-[650px] aspect-[16/10] rounded-3xl overflow-hidden shadow-2xl border border-white/5">
                                         <img
-                                            src="https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=80&w=2670&auto=format&fit=crop"
+                                            src="/hero-car.jpg"
                                             alt="Urban Rentals Premium Fleet"
                                             className="w-full h-full object-cover object-center"
                                         />
