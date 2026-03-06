@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Car, Fuel, Map, User, MapPin, ChevronRight, Star, ChevronLeft, Circle, CircleDot, Gauge } from "lucide-react";
+import { Car, Fuel, Map, User, MapPin, ChevronRight, Star, ChevronLeft, Circle, CircleDot, Gauge, ShieldCheck, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/Dialog";
 import { Input } from "@/components/ui/Input";
@@ -401,9 +401,21 @@ export function PublicFleet({ vehicles }: { vehicles: any[] }) {
 
                     <div className="grid md:grid-cols-3 gap-8">
                         {[
-                            { icon: User, title: "Chofer Ejecutivo", desc: "Conductores profesionales entrenados para brindar el mejor servicio." },
-                            { icon: Fuel, title: "Todo Incluido", desc: "Olvídate del combustible. Entregamos el tanque lleno y listo para rodar." },
-                            { icon: MapPin, title: "Cobertura Total", desc: "Viaja sin límites con nuestra asistencia en carretera a nivel nacional." }
+                            {
+                                icon: User,
+                                title: "Chofer Ejecutivo",
+                                desc: "Conductores profesionales entrenados para brindar una experiencia de viaje exclusiva y segura."
+                            },
+                            {
+                                icon: ShieldCheck,
+                                title: "Gestión Integral",
+                                desc: "Nos encargamos de la gestión de combustible, peajes y mantenimiento preventivo para que su única prioridad sea el camino."
+                            },
+                            {
+                                icon: MapPin,
+                                title: "Asistencia 24/7",
+                                desc: "Viaje con total tranquilidad con nuestra cobertura de asistencia en carretera y soporte técnico a nivel nacional."
+                            }
                         ].map((service, i) => (
                             <motion.div
                                 key={i}
