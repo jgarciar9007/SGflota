@@ -72,14 +72,29 @@ echo "Configurando PM2..."
 pm2 stop sgflota || true
 pm2 delete sgflota || true
 
+# Crear directorio persistente de uploads (fuera del repo, no se pierde en git pull)
+echo "Configurando directorio persistente de uploads..."
+mkdir -p /var/www/uploads
+
 # Next.js con 'output: standalone' requiere mover la carpeta public y .next/static
 if [ -d ".next/standalone" ]; then
     echo "Configurando Next.js standalone..."
+    # Copiar public (sin la carpeta uploads para poder reemplazarla con symlink)
     cp -r public .next/standalone/ || true
     cp -r .next/static .next/standalone/.next/ || true
+
+    # Reemplazar uploads con symlink persistente en ambos lugares
+    rm -rf public/uploads
+    ln -sf /var/www/uploads public/uploads
+    rm -rf .next/standalone/public/uploads
+    ln -sf /var/www/uploads .next/standalone/public/uploads
+
     PORT=3000 pm2 start .next/standalone/server.js --name "sgflota"
 else
     echo "Configuración regular de Next.js..."
+    # Reemplazar uploads con symlink persistente
+    rm -rf public/uploads
+    ln -sf /var/www/uploads public/uploads
     pm2 start npm --name "sgflota" -- start
 fi
 
