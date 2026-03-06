@@ -61,7 +61,7 @@ npm install
 echo "Ejecutando migraciones de Prisma y generando el cliente..."
 npx prisma generate
 # Aplicar esquema a la base de datos
-npx prisma db push --accept-data-loss || true
+npx prisma db push || true
 
 echo "Iniciando build de producción..."
 npm run build

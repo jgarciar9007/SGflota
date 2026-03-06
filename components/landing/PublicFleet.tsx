@@ -44,12 +44,18 @@ function VehicleCard({ vehicle, handleBookClick, itemVariants }: { vehicle: any,
     return (
         <motion.div
             variants={itemVariants}
-            className="group bg-white rounded-3xl shadow-sm hover:shadow-2xl transition-all duration-500 border border-slate-100 overflow-hidden flex flex-col relative"
+            whileHover={{ scale: 1.03, transition: { duration: 0.3 } }}
+            className="group bg-white rounded-3xl shadow-sm hover:shadow-2xl transition-all duration-300 border border-slate-100 overflow-hidden flex flex-col relative"
         >
-            <div className="absolute top-4 right-4 z-10 bg-white/95 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-800 uppercase tracking-wide border border-slate-100 shadow-sm">
+            <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl text-[10px] font-bold text-blue-600 uppercase tracking-wider border border-white/20 shadow-lg flex items-center gap-2">
+                <Gauge size={12} />
+                {vehicle.range}
+            </div>
+            <div className="absolute top-4 right-4 z-10 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl text-[10px] font-bold text-orange-600 uppercase tracking-wider border border-white/20 shadow-lg flex items-center gap-2">
+                <Fuel size={12} />
                 {vehicle.type}
             </div>
-            <div className="relative h-64 bg-slate-100 overflow-hidden group/carousel">
+            <div className="relative h-56 bg-slate-100 overflow-hidden group/carousel">
                 {images.length > 0 ? (
                     <img src={images[currentIndex]} alt={vehicle.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                 ) : (
@@ -58,8 +64,8 @@ function VehicleCard({ vehicle, handleBookClick, itemVariants }: { vehicle: any,
                     </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6 pointer-events-none">
-                    <span className="text-white font-medium flex items-center gap-2">
-                        <Star size={16} className="text-yellow-400 fill-yellow-400" /> Vehículo Premium
+                    <span className="text-white text-xs font-medium flex items-center gap-2">
+                        <Star size={14} className="text-yellow-400 fill-yellow-400" /> Vehículo Premium
                     </span>
                 </div>
 
@@ -88,36 +94,21 @@ function VehicleCard({ vehicle, handleBookClick, itemVariants }: { vehicle: any,
                     </>
                 )}
             </div>
-            <div className="p-8 flex-1 flex flex-col">
+            <div className="p-6 flex-1 flex flex-col">
                 <div className="flex justify-between items-start mb-6">
                     <div>
-                        <h3 className="text-2xl font-bold text-slate-900 mb-1 group-hover:text-blue-600 transition-colors">{vehicle.name}</h3>
-                        <p className="text-sm text-slate-500 font-medium">{vehicle.year}</p>
+                        <h3 className="text-xl font-bold text-slate-900 mb-1 group-hover:text-blue-600 transition-colors line-clamp-1">{vehicle.name}</h3>
+                        <p className="text-xs text-slate-500 font-medium">{vehicle.year}</p>
                     </div>
                     <div className="text-right">
-                        <div className="text-xs text-slate-400 font-medium mb-1 uppercase tracking-wider">Desde</div>
-                        <div className="text-2xl font-black text-slate-900 leading-none">{formatCurrency(vehicle.price)}</div>
-                        <div className="text-xs text-slate-400 font-medium mt-1">/ día</div>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mb-8">
-                    <div className="flex items-center text-sm text-slate-600 gap-3 p-3 rounded-xl bg-slate-50">
-                        <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center text-orange-500">
-                            <Fuel size={16} />
-                        </div>
-                        <span className="font-medium text-xs sm:text-sm">{vehicle.type}</span>
-                    </div>
-                    <div className="flex items-center text-sm text-slate-600 gap-3 p-3 rounded-xl bg-slate-50">
-                        <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center text-blue-500">
-                            <Gauge size={16} />
-                        </div>
-                        <span className="font-medium text-xs sm:text-sm">{vehicle.range}</span>
+                        <div className="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-widest">Desde</div>
+                        <div className="text-xl font-bold text-slate-900 leading-none">{formatCurrency(vehicle.price)}</div>
+                        <div className="text-[10px] text-slate-400 font-medium mt-1">/ día</div>
                     </div>
                 </div>
 
                 <div className="mt-auto">
-                    <Button className="w-full bg-slate-900 hover:bg-blue-600 text-white h-12 rounded-xl text-base font-medium shadow-lg shadow-slate-200 transition-all duration-300 transform group-hover:-translate-y-1" onClick={() => handleBookClick(vehicle)}>
+                    <Button className="w-full bg-slate-900 hover:bg-blue-600 text-white h-11 rounded-xl text-sm font-semibold shadow-md shadow-slate-100 transition-all duration-300" onClick={() => handleBookClick(vehicle)}>
                         Reservar Ahora
                     </Button>
                 </div>
