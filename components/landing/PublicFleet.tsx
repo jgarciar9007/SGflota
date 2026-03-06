@@ -98,7 +98,13 @@ function VehicleCard({ vehicle, handleBookClick, itemVariants }: { vehicle: any,
                 <div className="flex justify-between items-start mb-6">
                     <div>
                         <h3 className="text-xl font-bold text-slate-900 mb-1 group-hover:text-blue-600 transition-colors line-clamp-1">{vehicle.name}</h3>
-                        <p className="text-xs text-slate-500 font-medium">{vehicle.year}</p>
+                        <div className="flex items-center gap-3">
+                            <p className="text-xs text-slate-500 font-medium">{vehicle.year}</p>
+                            <div className="flex items-center gap-1 text-xs text-slate-500 font-medium border-l border-slate-200 pl-3">
+                                <User size={12} className="text-blue-500" />
+                                <span>{vehicle.seats || 5} Plazas</span>
+                            </div>
+                        </div>
                     </div>
                     <div className="text-right">
                         <div className="text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-widest">Desde</div>

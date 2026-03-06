@@ -16,6 +16,7 @@ export interface Vehicle {
     plate: string;
     year: number;
     ownership: "Propia" | "Tercero";
+    seats: number;
     ownerName?: string;
     ownerDni?: string;
 }

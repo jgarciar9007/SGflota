@@ -30,6 +30,7 @@ export async function POST(request: Request) {
                 plate: data.plate,
                 year: data.year,
                 ownership: data.ownership,
+                seats: data.seats || 5,
                 ownerName: data.ownerName,
                 ownerDni: data.ownerDni,
             },
@@ -46,7 +47,10 @@ export async function PUT(request: Request) {
         const { id, ...updateData } = data;
         const vehicle = await prisma.vehicle.update({
             where: { id },
-            data: updateData,
+            data: {
+                ...updateData,
+                seats: updateData.seats ? parseInt(updateData.seats.toString()) : undefined
+            },
         });
         return NextResponse.json(vehicle);
     } catch (error) {

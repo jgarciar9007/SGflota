@@ -3,7 +3,7 @@
 import { useData } from "@/context/DataContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { ArrowLeft, Battery, Fuel, Gauge, Calendar, DollarSign, Wrench, Car, Activity, FileText } from "lucide-react";
+import { ArrowLeft, Battery, Fuel, Gauge, Calendar, DollarSign, Wrench, Car, Activity, FileText, User } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
@@ -183,6 +183,10 @@ export default function VehicleDetailsPage() {
                             <div className="flex items-center gap-2 text-gray-300">
                                 <Gauge className="h-4 w-4 text-red-400" />
                                 <span>{vehicle.range}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-gray-300">
+                                <User className="h-4 w-4 text-pink-400" />
+                                <span>{vehicle.seats || 5} Plazas</span>
                             </div>
                         </div>
                     </CardContent>

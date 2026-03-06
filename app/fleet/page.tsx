@@ -29,6 +29,7 @@ export default function FleetPage() {
         image: "",
         images: [] as string[],
         ownership: "Propia",
+        seats: 5,
         ownerName: "",
         ownerDni: ""
     });
@@ -76,6 +77,7 @@ export default function FleetPage() {
             year: parseInt(vehicleData.year.toString()),
             status: "Disponible" as const,
             ownership: vehicleData.ownership as "Propia" | "Tercero",
+            seats: parseInt(vehicleData.seats.toString()) || 5,
         };
 
         if (id) {
@@ -96,6 +98,7 @@ export default function FleetPage() {
             image: "",
             images: [],
             ownership: "Propia",
+            seats: 5,
             ownerName: "",
             ownerDni: ""
         });
@@ -243,6 +246,10 @@ export default function FleetPage() {
                                             <BadgeCheck className="h-4 w-4 text-purple-400" />
                                             {car.ownership === "Propia" ? "Flota Propia" : "Tercero"}
                                         </div>
+                                        <div className="flex items-center gap-2">
+                                            <Plus className="h-4 w-4 text-pink-400" />
+                                            {car.seats || 5} Plazas
+                                        </div>
                                     </div>
                                 </CardContent>
                                 <CardFooter className="flex items-center justify-between border-t border-border bg-muted/30 p-4">
@@ -260,6 +267,7 @@ export default function FleetPage() {
                                                 image: car.image || "",
                                                 images: car.images || [],
                                                 ownership: car.ownership,
+                                                seats: car.seats || 5,
                                                 ownerName: car.ownerName || "",
                                                 ownerDni: car.ownerDni || ""
                                             });
@@ -307,7 +315,7 @@ export default function FleetPage() {
                                     </td>
                                     <td className="px-4 py-3">
                                         <div className="font-semibold text-foreground">{car.name}</div>
-                                        <div className="text-xs text-muted-foreground">{car.plate} • {car.year}</div>
+                                        <div className="text-xs text-muted-foreground">{car.plate} • {car.year} • {car.seats || 5} Plazas</div>
                                     </td>
                                     <td className="px-4 py-3 hidden md:table-cell">
                                         <div className="flex items-center gap-2">
@@ -343,6 +351,7 @@ export default function FleetPage() {
                                                     image: car.image || "",
                                                     images: car.images || [],
                                                     ownership: car.ownership,
+                                                    seats: car.seats || 5,
                                                     ownerName: car.ownerName || "",
                                                     ownerDni: car.ownerDni || ""
                                                 });
@@ -452,6 +461,18 @@ export default function FleetPage() {
                                                 type="number"
                                                 value={formData.price}
                                                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                                                className="bg-background border-input text-foreground mt-1"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-sm text-foreground font-medium">Plazas (Asientos)</label>
+                                            <Input
+                                                type="number"
+                                                value={formData.seats}
+                                                onChange={(e) => setFormData({ ...formData, seats: parseInt(e.target.value) })}
                                                 className="bg-background border-input text-foreground mt-1"
                                                 required
                                             />

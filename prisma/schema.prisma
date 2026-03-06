@@ -22,6 +22,7 @@ model Vehicle {
   plate     String
   year      Int
   ownership String   // "Propia" | "Tercero"
+  seats     Int      @default(5)
   ownerName String?
   ownerDni  String?
 
