@@ -385,7 +385,7 @@ export default function FleetPage() {
                     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                         <Card className="w-full max-w-md border-border bg-card shadow-lg">
                             <CardHeader className="flex flex-row items-center justify-between border-b border-border">
-                                <CardTitle className="text-foreground">Agregar Vehículo</CardTitle>
+                                <CardTitle className="text-foreground">{formData.id ? "Editar Vehículo" : "Agregar Vehículo"}</CardTitle>
                                 <button onClick={() => setShowAddModal(false)} className="text-muted-foreground hover:text-foreground">
                                     <X className="h-5 w-5" />
                                 </button>
@@ -590,7 +590,7 @@ export default function FleetPage() {
                                 </CardContent>
                                 <CardFooter className="border-t border-border pt-6">
                                     <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                                        Agregar Vehículo
+                                        {formData.id ? "Guardar Cambios" : "Agregar Vehículo"}
                                     </Button>
                                 </CardFooter>
                             </form>
