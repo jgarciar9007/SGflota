@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Car, Fuel, Map, User, MapPin, ChevronRight, Star, ChevronLeft, Circle, CircleDot } from "lucide-react";
+import { Car, Fuel, Map, User, MapPin, ChevronRight, Star, ChevronLeft, Circle, CircleDot, Gauge } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/Dialog";
 import { Input } from "@/components/ui/Input";
@@ -92,7 +92,7 @@ function VehicleCard({ vehicle, handleBookClick, itemVariants }: { vehicle: any,
                 <div className="flex justify-between items-start mb-6">
                     <div>
                         <h3 className="text-2xl font-bold text-slate-900 mb-1 group-hover:text-blue-600 transition-colors">{vehicle.name}</h3>
-                        <p className="text-sm text-slate-500 font-medium">{vehicle.year} • {vehicle.plate}</p>
+                        <p className="text-sm text-slate-500 font-medium">{vehicle.year}</p>
                     </div>
                     <div className="text-right">
                         <div className="text-xs text-slate-400 font-medium mb-1 uppercase tracking-wider">Desde</div>
@@ -101,12 +101,18 @@ function VehicleCard({ vehicle, handleBookClick, itemVariants }: { vehicle: any,
                     </div>
                 </div>
 
-                <div className="space-y-4 mb-8">
+                <div className="grid grid-cols-2 gap-4 mb-8">
+                    <div className="flex items-center text-sm text-slate-600 gap-3 p-3 rounded-xl bg-slate-50">
+                        <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center text-orange-500">
+                            <Fuel size={16} />
+                        </div>
+                        <span className="font-medium text-xs sm:text-sm">{vehicle.type}</span>
+                    </div>
                     <div className="flex items-center text-sm text-slate-600 gap-3 p-3 rounded-xl bg-slate-50">
                         <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center text-blue-500">
-                            <Map size={16} />
+                            <Gauge size={16} />
                         </div>
-                        <span className="font-medium">Rango: {vehicle.range}</span>
+                        <span className="font-medium text-xs sm:text-sm">{vehicle.range}</span>
                     </div>
                 </div>
 
