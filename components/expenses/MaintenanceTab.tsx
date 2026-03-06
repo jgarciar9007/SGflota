@@ -5,11 +5,11 @@ import { useData } from "@/context/DataContext";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
-import { Plus, X, Wrench, Calendar, DollarSign } from "lucide-react";
+import { Plus, X, Wrench, Calendar, DollarSign, Trash2 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
 export default function MaintenanceTab() {
-    const { maintenances, vehicles, addMaintenance, updateMaintenance, currentUser, canEdit } = useData();
+    const { maintenances, vehicles, addMaintenance, updateMaintenance, deleteMaintenance, currentUser, canEdit, canDelete } = useData();
     const [showAddModal, setShowAddModal] = useState(false);
     const [formData, setFormData] = useState({
         vehicleId: "",
@@ -36,6 +36,12 @@ export default function MaintenanceTab() {
 
     const handleStatusChange = (id: string, status: "Programado" | "En Proceso" | "Completado") => {
         updateMaintenance(id, { status });
+    };
+
+    const handleDelete = (id: string) => {
+        if (confirm("¿Estás seguro de que deseas eliminar este mantenimiento?")) {
+            deleteMaintenance(id);
+        }
     };
 
     const availableVehicles = vehicles.filter((v) => v.status !== "Mantenimiento");
@@ -103,6 +109,17 @@ export default function MaintenanceTab() {
                                                     className="bg-green-600 hover:bg-green-700 text-white text-sm"
                                                 >
                                                     Completar
+                                                </Button>
+                                            )}
+                                            {canDelete(currentUser) && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => handleDelete(maintenance.id)}
+                                                    className="text-red-500 hover:text-red-700 hover:bg-red-50 ml-2"
+                                                    title="Eliminar Mantenimiento"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
                                                 </Button>
                                             )}
                                         </div>

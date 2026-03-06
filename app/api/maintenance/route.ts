@@ -86,7 +86,18 @@ export async function DELETE(request: Request) {
             return NextResponse.json({ error: 'Acceso denegado. Solo administradores pueden eliminar.' }, { status: 403 });
         }
 
+        const maintenance = await prisma.maintenance.findUnique({ where: { id } });
+        if (!maintenance) return NextResponse.json({ error: 'Maintenance not found' }, { status: 404 });
+
         await prisma.maintenance.delete({ where: { id } });
+
+        if (maintenance.status === "En Proceso") {
+            await prisma.vehicle.update({
+                where: { id: maintenance.vehicleId },
+                data: { status: "Disponible" }
+            });
+        }
+
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error(error);

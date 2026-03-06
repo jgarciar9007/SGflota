@@ -594,8 +594,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
         }
     };
     const deleteMaintenance = async (id: string) => {
+        const m = maintenances.find(x => x.id === id);
         await apiCall(`/api/maintenance?id=${id}`, 'DELETE');
         setMaintenances(prev => prev.filter(m => m.id !== id));
+        if (m && m.status === "En Proceso") {
+            setVehicles(prev => prev.map(v => v.id === m.vehicleId ? { ...v, status: "Disponible" } : v));
+        }
     };
 
     const updateCompanySettings = async (settings: Partial<CompanySettings>) => {
