@@ -4,9 +4,10 @@ import { useState, useMemo } from "react";
 import { useData } from "@/context/DataContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Users, Calendar, DollarSign, Eye, CheckCircle, Loader2 } from "lucide-react";
+import { Users, Calendar, DollarSign, Eye, CheckCircle, Loader2, Trash2 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { toast } from "sonner";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 interface PayrollItem {
     personnelId: string;
@@ -19,9 +20,17 @@ interface PayrollItem {
 }
 
 export default function PayrollTab() {
-    const { payrolls, personnel, addPayroll } = useData();
+    const { payrolls, personnel, addPayroll, deletePayroll, currentUser, canDelete } = useData();
     const [showGenerateModal, setShowGenerateModal] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [confirmModal, setConfirmModal] = useState({
+        isOpen: false,
+        title: "",
+        description: "",
+        confirmText: "",
+        variant: "danger" as "danger" | "success" | "info" | undefined,
+        onConfirm: () => { }
+    });
 
     // Payroll form state
     const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
@@ -122,9 +131,35 @@ export default function PayrollTab() {
                                     <Calendar className="h-5 w-5 text-green-600" />
                                     Nómina: {getMonthName(payroll.month)} {payroll.year}
                                 </CardTitle>
-                                <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full border border-green-200 uppercase font-bold">
-                                    {payroll.status}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                    <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full border border-green-200 uppercase font-bold">
+                                        {payroll.status}
+                                    </span>
+                                    {canDelete(currentUser) && (
+                                        <button
+                                            onClick={() => setConfirmModal({
+                                                isOpen: true,
+                                                title: "Eliminar Nómina",
+                                                description: `¿Eliminar la nómina de ${getMonthName(payroll.month)} ${payroll.year}? Esta acción no se puede deshacer.`,
+                                                confirmText: "Eliminar",
+                                                variant: "danger",
+                                                onConfirm: async () => {
+                                                    try {
+                                                        await deletePayroll(payroll.id);
+                                                        toast.success("Nómina eliminada");
+                                                    } catch {
+                                                        toast.error("Error al eliminar la nómina");
+                                                    } finally {
+                                                        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                                                    }
+                                                }
+                                            })}
+                                            className="p-1 hover:bg-red-50 rounded text-red-500 hover:text-red-700"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </CardHeader>
                         <CardContent className="pt-4">
@@ -154,6 +189,16 @@ export default function PayrollTab() {
                     </div>
                 )}
             </div>
+
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                description={confirmModal.description}
+                confirmText={confirmModal.confirmText}
+                variant={confirmModal.variant}
+            />
 
             {/* Modal Generation */}
             {showGenerateModal && (

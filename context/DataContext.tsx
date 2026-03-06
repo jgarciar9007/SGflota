@@ -185,6 +185,7 @@ interface DataContextType {
     canDelete: (user: User | null) => boolean;
     canAccessSettings: (user: User | null) => boolean; // New helper
     isLoading: boolean;
+    deleteDriverPayment: (id: string) => Promise<void>;
 }
 
 // ... inside DataProvider ...
@@ -259,7 +260,10 @@ interface DataContextType {
     endRental: (id: string, actualEndDate: string) => void;
     addInvoice: (invoice: Omit<Invoice, "id" | "invoiceNumber" | "status" | "paidAmount" | "payments"> & { date?: string }) => void;
     updateInvoice: (id: string, updates: Partial<Invoice>) => void;
+    deleteInvoice: (id: string) => void;
     addPayment: (clientId: string, allocations: { invoiceId: string; amount: number }[], method: string) => Promise<string>; // Changed to Promise
+    updatePayment: (id: string, updates: Partial<Payment>) => void;
+    deletePayment: (id: string) => void;
     addRefund: (clientId: string, invoiceId: string, amount: number, reason: string) => void;
     updateRefund: (id: string, updates: Partial<Refund>) => void;
     addMaintenance: (maintenance: Omit<Maintenance, "id">) => void;
@@ -288,6 +292,8 @@ interface DataContextType {
     deletePersonnel: (id: string) => void;
     addDriverPayment: (payment: Omit<DriverPayment, "id">) => void;
     addPayroll: (payroll: Omit<Payroll, "id">) => void;
+    updatePayroll: (id: string, updates: Partial<Payroll>) => void;
+    deletePayroll: (id: string) => void;
     currentUser: User | null;
     login: (email: string) => boolean;
     logout: () => void;
@@ -512,6 +518,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setInvoices(prev => prev.map(i => i.id === id ? res : i));
     };
 
+    const deleteInvoice = async (id: string) => {
+        await apiCall(`/api/invoices?id=${id}`, 'DELETE');
+        setInvoices(prev => prev.filter(i => i.id !== id));
+    };
+
     const addPayment = async (clientId: string, allocations: { invoiceId: string; amount: number }[], method: string): Promise<string> => {
         // This should transactionally handle multiple payments. My API handles ONE payment per ONE invoice.
         // I will loop.
@@ -536,6 +547,22 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setAccountsPayable(ap);
 
         return receiptId;
+    };
+
+    const updatePayment = async (id: string, updates: Partial<Payment>) => {
+        const res = await apiCall('/api/payments', 'PUT', { id, ...updates });
+        setPayments(prev => prev.map(p => p.id === id ? res : p));
+        // Need to refetch invoices to update paid amount accurately
+        const i = await apiCall('/api/invoices', 'GET');
+        setInvoices(i);
+    };
+
+    const deletePayment = async (id: string) => {
+        await apiCall(`/api/payments?id=${id}`, 'DELETE');
+        setPayments(prev => prev.filter(p => p.id !== id));
+        // Need to refetch invoices to update paid amount accurately
+        const i = await apiCall('/api/invoices', 'GET');
+        setInvoices(i);
     };
 
     const addRefund = async (clientId: string, invoiceId: string, amount: number, reason: string) => {
@@ -665,11 +692,25 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setDriverPayments(prev => [res, ...prev]);
     };
 
+    const deleteDriverPayment = async (id: string) => {
+        await apiCall(`/api/driver-payments?id=${id}`, 'DELETE');
+        setDriverPayments(prev => prev.filter(p => p.id !== id));
+    };
+
     const addPayroll = async (payroll: Omit<Payroll, "id">) => {
         const res = await apiCall('/api/payroll', 'POST', payroll);
         setPayrolls(prev => [res, ...prev]);
     };
 
+    const updatePayroll = async (id: string, updates: Partial<Payroll>) => {
+        const res = await apiCall('/api/payroll', 'PUT', { id, ...updates });
+        setPayrolls(prev => prev.map(p => p.id === id ? res : p));
+    };
+
+    const deletePayroll = async (id: string) => {
+        await apiCall(`/api/payroll?id=${id}`, 'DELETE');
+        setPayrolls(prev => prev.filter(p => p.id !== id));
+    };
 
     // Auth Methods
     const login = (email: string) => {
@@ -717,6 +758,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
                 personnel,
                 driverPayments,
                 payrolls,
+                updatePayroll,
+                deletePayroll,
                 addVehicle,
                 updateVehicle,
                 deleteVehicle,
@@ -728,7 +771,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
                 endRental,
                 addInvoice,
                 updateInvoice,
+                deleteInvoice,
                 addPayment,
+                updatePayment,
+                deletePayment,
                 addRefund,
                 updateRefund,
                 addMaintenance,
@@ -756,6 +802,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
                 updatePersonnel,
                 deletePersonnel,
                 addDriverPayment,
+                deleteDriverPayment,
                 addPayroll,
                 currentUser,
                 login,

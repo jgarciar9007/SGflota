@@ -5,7 +5,8 @@ import { useData } from "@/context/DataContext";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
-import { Plus, X, Wrench, Calendar, Trash2 } from "lucide-react";
+import { Plus, X, Wrench, Calendar, Trash2, Edit } from "lucide-react";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 import { formatCurrency } from "@/lib/utils";
 
 export default function MaintenancePage() {
@@ -20,21 +21,53 @@ export default function MaintenancePage() {
         type: "Preventivo"
     });
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [maintenanceToEdit, setMaintenanceToEdit] = useState<any>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [confirmModal, setConfirmModal] = useState({
+        isOpen: false,
+        title: "",
+        description: "",
+        confirmText: "",
+        variant: "danger" as "danger" | "success" | "info" | undefined,
+        onConfirm: () => { }
+    });
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        addMaintenance({
-            ...formData,
-            cost: parseFloat(formData.cost),
-            status: "Programado",
-        });
-        setShowAddModal(false);
-        setFormData({
-            vehicleId: "",
-            description: "",
-            date: new Date().toISOString().split("T")[0],
-            cost: "",
-            type: "Preventivo"
-        });
+        setIsSubmitting(true);
+        try {
+            await addMaintenance({
+                ...formData,
+                cost: parseFloat(formData.cost),
+                status: "Programado",
+            });
+            setShowAddModal(false);
+            setFormData({
+                vehicleId: "",
+                description: "",
+                date: new Date().toISOString().split("T")[0],
+                cost: "",
+                type: "Preventivo"
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleEditSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            await updateMaintenance(maintenanceToEdit.id, {
+                ...maintenanceToEdit,
+                cost: parseFloat(maintenanceToEdit.cost),
+            });
+            setShowEditModal(false);
+            setMaintenanceToEdit(null);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleStatusChange = async (id: string, status: "Programado" | "En Proceso" | "Completado") => {
@@ -113,13 +146,38 @@ export default function MaintenancePage() {
                                     </div>
                                 </div>
                             </CardContent>
-                            <CardFooter className="flex justify-end pt-0 pb-4 pr-4">
+                            <CardFooter className="flex justify-end pt-0 pb-4 pr-4 gap-2">
+                                {canEdit(currentUser) && (
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                                        onClick={() => {
+                                            setMaintenanceToEdit({ ...maintenance });
+                                            setShowEditModal(true);
+                                        }}
+                                    >
+                                        <Edit className="h-4 w-4 mr-2" /> Editar
+                                    </Button>
+                                )}
                                 {canEdit(currentUser) && (
                                     <Button
                                         variant="ghost"
                                         size="sm"
                                         className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                                        onClick={() => deleteMaintenance(maintenance.id)}
+                                        onClick={() => {
+                                            setConfirmModal({
+                                                isOpen: true,
+                                                title: "Eliminar Mantenimiento",
+                                                description: "¿Estás seguro de eliminar este registro de mantenimiento?",
+                                                confirmText: "Eliminar",
+                                                variant: "danger",
+                                                onConfirm: async () => {
+                                                    await deleteMaintenance(maintenance.id);
+                                                    setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                                                }
+                                            });
+                                        }}
                                     >
                                         <Trash2 className="h-4 w-4 mr-2" /> Eliminar
                                     </Button>
@@ -206,14 +264,104 @@ export default function MaintenancePage() {
                                 </div>
                             </CardContent>
                             <CardFooter className="border-t border-border pt-6">
-                                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                                    Guardar
+                                <Button type="submit" disabled={isSubmitting} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                                    {isSubmitting ? "Guardando..." : "Guardar"}
                                 </Button>
                             </CardFooter>
                         </form>
                     </Card>
                 </div>
             )}
+
+            {/* Edit Maintenance Modal */}
+            {showEditModal && maintenanceToEdit && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <Card className="w-full max-w-md border-border bg-card shadow-lg">
+                        <CardHeader className="flex flex-row items-center justify-between border-b border-border">
+                            <CardTitle className="text-foreground">Editar Mantenimiento</CardTitle>
+                            <button onClick={() => setShowEditModal(false)} className="text-muted-foreground hover:text-foreground">
+                                <X className="h-5 w-5" />
+                            </button>
+                        </CardHeader>
+                        <form onSubmit={handleEditSubmit}>
+                            <CardContent className="space-y-4 pt-6">
+                                <div>
+                                    <label className="text-sm text-foreground font-medium">Vehículo (No editable)</label>
+                                    <select
+                                        disabled
+                                        value={maintenanceToEdit.vehicleId}
+                                        className="w-full h-10 px-3 rounded-md bg-muted border border-input text-muted-foreground mt-1"
+                                    >
+                                        {vehicles.map((v) => (
+                                            <option key={v.id} value={v.id}>
+                                                {v.name} ({v.plate})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="text-sm text-foreground font-medium">Tipo</label>
+                                    <select
+                                        value={maintenanceToEdit.type}
+                                        onChange={(e) => setMaintenanceToEdit({ ...maintenanceToEdit, type: e.target.value })}
+                                        className="w-full h-10 px-3 rounded-md bg-background border border-input text-foreground mt-1"
+                                        required
+                                    >
+                                        <option value="Preventivo">Preventivo</option>
+                                        <option value="Correctivo">Correctivo</option>
+                                        <option value="Lavado">Lavado</option>
+                                        <option value="Otro">Otro</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="text-sm text-foreground font-medium">Costo ($)</label>
+                                    <Input
+                                        type="number"
+                                        value={maintenanceToEdit.cost}
+                                        onChange={(e) => setMaintenanceToEdit({ ...maintenanceToEdit, cost: e.target.value })}
+                                        className="bg-background border-input text-foreground mt-1"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm text-foreground font-medium">Fecha</label>
+                                    <Input
+                                        type="date"
+                                        value={new Date(maintenanceToEdit.date).toISOString().split('T')[0]}
+                                        onChange={(e) => setMaintenanceToEdit({ ...maintenanceToEdit, date: e.target.value })}
+                                        className="bg-background border-input text-foreground mt-1"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm text-foreground font-medium">Descripción</label>
+                                    <textarea
+                                        value={maintenanceToEdit.description}
+                                        onChange={(e) => setMaintenanceToEdit({ ...maintenanceToEdit, description: e.target.value })}
+                                        className="w-full rounded-md bg-background border border-input text-foreground mt-1 p-2 min-h-[80px]"
+                                        required
+                                    />
+                                </div>
+                            </CardContent>
+                            <CardFooter className="border-t border-border pt-6">
+                                <Button type="submit" disabled={isSubmitting} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                                    {isSubmitting ? "Guardando..." : "Guardar Cambios"}
+                                </Button>
+                            </CardFooter>
+                        </form>
+                    </Card>
+                </div>
+            )}
+
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                description={confirmModal.description}
+                confirmText={confirmModal.confirmText}
+                variant={confirmModal.variant}
+            />
         </div>
     );
 }

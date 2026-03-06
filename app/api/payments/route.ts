@@ -147,3 +147,63 @@ export async function DELETE(request: Request) {
         return NextResponse.json({ error: 'Error deleting payment' }, { status: 500 });
     }
 }
+
+export async function PUT(request: Request) {
+    try {
+        const data = await request.json();
+        const { id, amount, date, method } = data;
+
+        if (!id || typeof amount !== 'number') {
+            return NextResponse.json({ error: 'ID and amount required' }, { status: 400 });
+        }
+
+        const session = await getServerSession(authOptions);
+        if (!session) {
+            return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+        }
+
+        const result = await prisma.$transaction(async (tx) => {
+            const oldPayment = await tx.payment.findUnique({ where: { id } });
+            if (!oldPayment) throw new Error("Payment not found");
+
+            const amountDiff = amount - oldPayment.amount;
+
+            // Update payment
+            const updatedPayment = await tx.payment.update({
+                where: { id },
+                data: {
+                    amount,
+                    date: date ? new Date(date) : oldPayment.date,
+                    method: method || oldPayment.method
+                }
+            });
+
+            // Update Invoice Paid Amount
+            if (amountDiff !== 0) {
+                const invoice = await tx.invoice.findUnique({ where: { id: oldPayment.invoiceId } });
+                if (invoice) {
+                    const newPaidAmount = invoice.paidAmount + amountDiff;
+                    let newStatus = invoice.status;
+                    if (newPaidAmount <= 0) newStatus = "Pendiente";
+                    else if (newPaidAmount >= invoice.amount) newStatus = "Pagado";
+                    else newStatus = "Parcial";
+
+                    await tx.invoice.update({
+                        where: { id: oldPayment.invoiceId },
+                        data: {
+                            paidAmount: newPaidAmount,
+                            status: newStatus,
+                        }
+                    });
+                }
+            }
+
+            return updatedPayment;
+        });
+
+        return NextResponse.json(result);
+    } catch (error) {
+        console.error(error);
+        return NextResponse.json({ error: 'Error updating payment' }, { status: 500 });
+    }
+}

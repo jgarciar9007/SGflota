@@ -42,3 +42,17 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Error creating driver payment' }, { status: 500 });
     }
 }
+
+export async function DELETE(request: Request) {
+    try {
+        const { searchParams } = new URL(request.url);
+        const id = searchParams.get('id');
+        if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
+
+        await prisma.driverPayment.delete({ where: { id } });
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error("Error deleting driver payment:", error);
+        return NextResponse.json({ error: 'Error deleting driver payment' }, { status: 500 });
+    }
+}

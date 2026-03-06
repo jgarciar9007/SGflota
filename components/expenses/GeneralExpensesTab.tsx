@@ -6,13 +6,22 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Plus, X, Search, Calendar, DollarSign, Tag, Trash2, Edit } from "lucide-react";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 import { formatCurrency } from "@/lib/utils";
 
 export default function GeneralExpensesTab() {
-    const { expenses, addExpense, updateExpense, deleteExpense, expenseCategories } = useData();
+    const { expenses, addExpense, updateExpense, deleteExpense, expenseCategories, currentUser, canEdit, canDelete } = useData();
     const [searchTerm, setSearchTerm] = useState("");
     const [showModal, setShowModal] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [confirmModal, setConfirmModal] = useState({
+        isOpen: false,
+        title: "",
+        description: "",
+        confirmText: "",
+        variant: "danger" as "danger" | "success" | "info" | undefined,
+        onConfirm: () => { }
+    });
 
     const [formData, setFormData] = useState({
         description: "",
@@ -58,10 +67,18 @@ export default function GeneralExpensesTab() {
         setShowModal(true);
     };
 
-    const handleDelete = (id: string) => {
-        if (confirm("¿Estás seguro de eliminar este gasto?")) {
-            deleteExpense(id);
-        }
+    const handleDeleteClick = (id: string) => {
+        setConfirmModal({
+            isOpen: true,
+            title: "Eliminar Gasto",
+            description: "¿Estás seguro de eliminar este gasto operativo?",
+            confirmText: "Eliminar",
+            variant: "danger",
+            onConfirm: () => {
+                deleteExpense(id);
+                setConfirmModal(prev => ({ ...prev, isOpen: false }));
+            }
+        });
     };
 
     const resetForm = () => {
@@ -85,13 +102,14 @@ export default function GeneralExpensesTab() {
                     <p className="text-sm text-muted-foreground">Registra y controla los gastos operativos de la empresa.</p>
                 </div>
                 <div className="flex items-center gap-4">
-
-                    <Button
-                        onClick={() => { resetForm(); setShowModal(true); }}
-                        className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
-                    >
-                        <Plus className="mr-2 h-4 w-4" /> Registrar Gasto
-                    </Button>
+                    {canEdit(currentUser) && (
+                        <Button
+                            onClick={() => { resetForm(); setShowModal(true); }}
+                            className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
+                        >
+                            <Plus className="mr-2 h-4 w-4" /> Registrar Gasto
+                        </Button>
+                    )}
                 </div>
             </div>
 
@@ -146,12 +164,16 @@ export default function GeneralExpensesTab() {
                                                 {expense.status}
                                             </span>
                                             <div className="flex items-center gap-1 ml-4 justify-end">
-                                                <button onClick={() => handleEdit(expense)} className="p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground">
-                                                    <Edit className="h-4 w-4" />
-                                                </button>
-                                                <button onClick={() => handleDelete(expense.id)} className="p-1 hover:bg-muted rounded text-red-500 hover:text-red-700">
-                                                    <Trash2 className="h-4 w-4" />
-                                                </button>
+                                                {canEdit(currentUser) && (
+                                                    <button onClick={() => handleEdit(expense)} className="p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground">
+                                                        <Edit className="h-4 w-4" />
+                                                    </button>
+                                                )}
+                                                {canDelete(currentUser) && (
+                                                    <button onClick={() => handleDeleteClick(expense.id)} className="p-1 hover:bg-muted rounded text-red-500 hover:text-red-700">
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -256,6 +278,16 @@ export default function GeneralExpensesTab() {
                     </Card>
                 </div>
             )}
+
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                description={confirmModal.description}
+                confirmText={confirmModal.confirmText}
+                variant={confirmModal.variant}
+            />
         </div>
     );
 }

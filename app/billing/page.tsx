@@ -5,7 +5,7 @@ import { useData } from "@/context/DataContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { DollarSign, Calendar, User, CheckCircle, Plus, X, Printer, CreditCard, FileText, Loader2 } from "lucide-react";
+import { DollarSign, Calendar, User, CheckCircle, Plus, X, Printer, CreditCard, FileText, Loader2, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
 
@@ -13,12 +13,16 @@ import { generateDocumentHtml } from "@/lib/reportUtils";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 
 export default function BillingPage() {
-    const { invoices, clients, rentals, vehicles, companySettings, addInvoice, addPayment, payments, refunds, updateRefund, accountsPayable, updateAccountPayable, expenseCategories } = useData();
+    const { invoices, clients, rentals, vehicles, companySettings, addInvoice, updateInvoice, deleteInvoice, addPayment, updatePayment, deletePayment, payments, refunds, updateRefund, accountsPayable, updateAccountPayable, expenseCategories, currentUser, canEdit, canDelete } = useData();
     const [activeTab, setActiveTab] = useState<"invoices" | "history" | "refunds" | "payables">("invoices");
     const [showAddModal, setShowAddModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [invoiceToEdit, setInvoiceToEdit] = useState<any>(null);
 
     // Multi-invoice payment state
     const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [showEditReceiptModal, setShowEditReceiptModal] = useState(false);
+    const [receiptToEdit, setReceiptToEdit] = useState<{ id: string, payments: any[], newDate: string, newMethod: string }>({ id: "", payments: [], newDate: "", newMethod: "" });
     const [paymentStep, setPaymentStep] = useState<1 | 2 | 3>(1);
     const [selectedClientId, setSelectedClientId] = useState("");
     const [selectedInvoiceIds, setSelectedInvoiceIds] = useState<string[]>([]);
@@ -127,6 +131,46 @@ export default function BillingPage() {
         setShowPaymentModal(false);
     };
 
+    const handleDeleteReceipt = async (receiptId: string) => {
+        setIsSubmitting(true);
+        try {
+            const receiptPayments = payments.filter(p => p.receiptId === receiptId);
+            for (const p of receiptPayments) {
+                await deletePayment(p.id);
+            }
+            toast.success("Recibo eliminado correctamente");
+        } catch (e: any) {
+            toast.error("Error al eliminar recibo");
+            console.error(e);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleEditReceiptSubmit = async () => {
+        setIsSubmitting(true);
+        try {
+            for (const p of receiptToEdit.payments) {
+                if (!p.amount || p.amount <= 0) {
+                    toast.error("Un pago no puede ser <= 0");
+                    setIsSubmitting(false);
+                    return;
+                }
+                await updatePayment(p.id, {
+                    amount: p.amount,
+                    date: new Date(receiptToEdit.newDate).toISOString(),
+                    method: receiptToEdit.newMethod
+                });
+            }
+            toast.success("Recibo actualizado");
+            setShowEditReceiptModal(false);
+        } catch (e: any) {
+            toast.error("Error al actualizar recibo");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     // --- Invoice Creation Logic ---
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -182,6 +226,52 @@ export default function BillingPage() {
         setFormData(prev => ({
             ...prev,
             items: prev.items.filter((_, i) => i !== index)
+        }));
+    };
+
+    const handleEditSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        const totalAmount = invoiceToEdit.items.reduce((sum: number, item: any) => sum + (item.quantity * item.price), 0);
+
+        if (totalAmount <= 0) {
+            toast.error("El monto total debe ser mayor a 0");
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            await updateInvoice(invoiceToEdit.id, {
+                date: new Date(invoiceToEdit.date).toISOString(),
+                amount: Math.round(totalAmount * 1.15),
+                rentalDetails: { items: invoiceToEdit.items }
+            });
+            toast.success("Factura actualizada correctamente");
+            setShowEditModal(false);
+            setInvoiceToEdit(null);
+        } catch (error) {
+            console.error("Error updating invoice:", error);
+            toast.error("Error al actualizar la factura");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const addEditItem = () => {
+        const numericPrice = parseFloat(newItem.price.replace(/\s/g, ''));
+        if (!newItem.description || isNaN(numericPrice) || numericPrice <= 0) return;
+
+        setInvoiceToEdit((prev: any) => ({
+            ...prev,
+            items: [...prev.items, { ...newItem, price: numericPrice }]
+        }));
+        setNewItem({ description: "", quantity: 1, price: "" });
+    };
+
+    const removeEditItem = (index: number) => {
+        setInvoiceToEdit((prev: any) => ({
+            ...prev,
+            items: prev.items.filter((_: any, i: number) => i !== index)
         }));
     };
 
@@ -596,6 +686,56 @@ export default function BillingPage() {
                                                     >
                                                         <Printer className="h-4 w-4" />
                                                     </Button>
+                                                    {canEdit(currentUser) && (
+                                                        <Button
+                                                            onClick={() => {
+                                                                setInvoiceToEdit({
+                                                                    id: invoice.id,
+                                                                    clientId: invoice.clientId,
+                                                                    date: new Date(invoice.date).toISOString().split('T')[0],
+                                                                    items: invoice.rentalDetails?.items || [],
+                                                                    rentalId: invoice.rentalId
+                                                                });
+                                                                setShowEditModal(true);
+                                                            }}
+                                                            variant="outline"
+                                                            title="Editar factura"
+                                                            className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                                                        >
+                                                            <Edit className="h-4 w-4" />
+                                                        </Button>
+                                                    )}
+                                                    {canDelete(currentUser) && (
+                                                        <Button
+                                                            onClick={async () => {
+                                                                if (invoice.paidAmount > 0) {
+                                                                    toast.error("No se puede eliminar una factura que tiene pagos asociados. Debes eliminar los pagos primero.");
+                                                                    return;
+                                                                }
+                                                                setConfirmModal({
+                                                                    isOpen: true,
+                                                                    title: "Eliminar Factura",
+                                                                    description: `¿Estás seguro de que deseas eliminar la factura ${invoice.invoiceNumber}? Esta acción no se puede deshacer.`,
+                                                                    confirmText: "Eliminar",
+                                                                    variant: "danger",
+                                                                    onConfirm: async () => {
+                                                                        try {
+                                                                            await deleteInvoice(invoice.id);
+                                                                            toast.success("Factura eliminada");
+                                                                        } catch (e: any) {
+                                                                            toast.error(e?.message || "Error al eliminar");
+                                                                        }
+                                                                        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                                                                    }
+                                                                });
+                                                            }}
+                                                            variant="outline"
+                                                            title="Eliminar factura"
+                                                            className="text-red-600 border-red-600 hover:bg-red-50"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    )}
                                                     {invoice.status !== "Pagado" && (
                                                         <Button
                                                             onClick={() => handleOpenPaymentModal(client?.id, invoice.id)}
@@ -659,13 +799,58 @@ export default function BillingPage() {
                                                     <p className="text-muted-foreground">Monto Total</p>
                                                     <p className="text-foreground font-bold text-lg">{formatCurrency(receipt.amount)}</p>
                                                 </div>
-                                                <div className="flex items-center justify-end">
+                                                <div className="flex items-center justify-end gap-2">
                                                     <Button
                                                         onClick={() => handlePrintReceipt(receipt.receiptId)}
                                                         className="bg-green-600 hover:bg-green-700 text-white"
+                                                        title="Reimprimir"
+                                                        size="sm"
                                                     >
-                                                        <Printer className="mr-2 h-4 w-4" /> Reimprimir
+                                                        <Printer className="h-4 w-4" />
                                                     </Button>
+                                                    {canEdit(currentUser) && (
+                                                        <Button
+                                                            onClick={() => {
+                                                                const group = payments.filter(p => p.receiptId === receipt.receiptId);
+                                                                setReceiptToEdit({
+                                                                    id: receipt.receiptId,
+                                                                    payments: JSON.parse(JSON.stringify(group)), // Deep clone to edit amounts locally
+                                                                    newDate: new Date(group[0].date).toISOString().split('T')[0],
+                                                                    newMethod: group[0].method,
+                                                                });
+                                                                setShowEditReceiptModal(true);
+                                                            }}
+                                                            variant="outline"
+                                                            title="Editar recibo"
+                                                            size="sm"
+                                                            className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                                                        >
+                                                            <Edit className="h-4 w-4" />
+                                                        </Button>
+                                                    )}
+                                                    {canDelete(currentUser) && (
+                                                        <Button
+                                                            onClick={async () => {
+                                                                setConfirmModal({
+                                                                    isOpen: true,
+                                                                    title: "Eliminar Recibo",
+                                                                    description: `¿Estás seguro de que deseas eliminar este recibo? Se revertirán los saldos pagados de las ${receipt.count} facturas asociadas.`,
+                                                                    confirmText: "Eliminar",
+                                                                    variant: "danger",
+                                                                    onConfirm: async () => {
+                                                                        await handleDeleteReceipt(receipt.receiptId);
+                                                                        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                                                                    }
+                                                                });
+                                                            }}
+                                                            variant="outline"
+                                                            title="Eliminar recibo"
+                                                            size="sm"
+                                                            className="text-red-600 border-red-600 hover:bg-red-50"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -1205,6 +1390,228 @@ export default function BillingPage() {
                                             </>
                                         ) : (
                                             "Guardar y Crear Factura"
+                                        )}
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )
+            }
+
+            {
+                showEditReceiptModal && (
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                        <Card className="w-full max-w-lg border-border bg-card shadow-lg flex flex-col">
+                            <CardHeader className="flex flex-row items-center justify-between border-b border-border">
+                                <CardTitle className="text-foreground">Editar Recibo</CardTitle>
+                                <Button variant="ghost" size="icon" onClick={() => setShowEditReceiptModal(false)} className="text-muted-foreground hover:text-foreground">
+                                    <X className="h-5 w-5" />
+                                </Button>
+                            </CardHeader>
+                            <CardContent className="p-6">
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-sm font-medium text-foreground">Fecha del Recibo</label>
+                                        <Input
+                                            type="date"
+                                            className="mt-1 bg-background border-input text-foreground"
+                                            value={receiptToEdit.newDate}
+                                            onChange={(e) => setReceiptToEdit({ ...receiptToEdit, newDate: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-medium text-foreground">Método de Pago</label>
+                                        <select
+                                            value={receiptToEdit.newMethod}
+                                            onChange={(e) => setReceiptToEdit({ ...receiptToEdit, newMethod: e.target.value })}
+                                            className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
+                                        >
+                                            <option value="EFECTIVO">Efectivo</option>
+                                            <option value="TRANSFERENCIA">Transferencia</option>
+                                            <option value="TARJETA">Tarjeta</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="border border-border rounded-lg overflow-hidden mt-4">
+                                        <table className="w-full text-sm">
+                                            <thead className="bg-muted text-muted-foreground">
+                                                <tr>
+                                                    <th className="p-3 text-left">Factura</th>
+                                                    <th className="p-3 text-right">Monto</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-border">
+                                                {receiptToEdit.payments.map((p, index) => {
+                                                    const inv = invoices.find(i => i.id === p.invoiceId);
+                                                    return (
+                                                        <tr key={index}>
+                                                            <td className="p-3 text-foreground">{inv ? (inv.invoiceNumber || '#' + inv.id.slice(0, 8)) : "Desconocida"}</td>
+                                                            <td className="p-3 text-right">
+                                                                <Input
+                                                                    type="number"
+                                                                    min="1"
+                                                                    value={p.amount}
+                                                                    onChange={(e) => {
+                                                                        const nuevos = [...receiptToEdit.payments];
+                                                                        nuevos[index] = { ...p, amount: parseFloat(e.target.value) || 0 };
+                                                                        setReceiptToEdit({ ...receiptToEdit, payments: nuevos });
+                                                                    }}
+                                                                    className="bg-background border-input text-right w-32 ml-auto"
+                                                                />
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div className="flex justify-end pt-4 border-t border-border">
+                                        <Button
+                                            onClick={handleEditReceiptSubmit}
+                                            disabled={isSubmitting}
+                                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                                        >
+                                            {isSubmitting ? (
+                                                <>
+                                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Guardando...
+                                                </>
+                                            ) : "Guardar Cambios"}
+                                        </Button>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )
+            }
+
+            {
+                showEditModal && invoiceToEdit && (
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                        <Card className="w-full max-w-4xl border-border bg-card shadow-lg h-[90vh] flex flex-col">
+                            <CardHeader className="flex flex-row items-center justify-between border-b border-border">
+                                <CardTitle className="text-foreground">Editar Factura</CardTitle>
+                                <Button variant="ghost" size="icon" onClick={() => setShowEditModal(false)} className="text-muted-foreground hover:text-foreground">
+                                    <X className="h-5 w-5" />
+                                </Button>
+                            </CardHeader>
+                            <CardContent className="p-6 overflow-y-auto flex-1">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                    <div>
+                                        <label className="text-sm font-medium text-foreground">Cliente (No editable)</label>
+                                        <Input
+                                            disabled
+                                            value={clients.find(c => c.id === invoiceToEdit.clientId)?.name || "N/A"}
+                                            className="mt-1 bg-muted border-input text-muted-foreground"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-medium text-foreground">Fecha de Emisión</label>
+                                        <Input
+                                            type="date"
+                                            className="mt-1 bg-background border-input text-foreground"
+                                            value={invoiceToEdit.date}
+                                            onChange={(e) => setInvoiceToEdit({ ...invoiceToEdit, date: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="border border-border rounded-lg overflow-hidden mb-6">
+                                    <table className="w-full text-sm">
+                                        <thead className="bg-muted text-muted-foreground">
+                                            <tr>
+                                                <th className="p-3 text-left">Descripción / Concepto</th>
+                                                <th className="p-3 text-right w-24">Cant.</th>
+                                                <th className="p-3 text-right w-40">Precio Unit.</th>
+                                                <th className="p-3 text-right w-40">Total</th>
+                                                <th className="p-3 w-10"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-border">
+                                            {invoiceToEdit.items.map((item: any, index: number) => (
+                                                <tr key={index}>
+                                                    <td className="p-3 text-foreground">{item.description}</td>
+                                                    <td className="p-3 text-right text-foreground">{item.quantity}</td>
+                                                    <td className="p-3 text-right text-foreground">{formatCurrency(item.price)}</td>
+                                                    <td className="p-3 text-right font-medium text-foreground">{formatCurrency(item.quantity * item.price)}</td>
+                                                    <td className="p-3 text-center">
+                                                        <Button variant="ghost" size="icon" onClick={() => removeEditItem(index)} className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50">
+                                                            <X className="h-4 w-4" />
+                                                        </Button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                            <tr className="bg-muted/30">
+                                                <td className="p-2">
+                                                    <div className="relative">
+                                                        <input
+                                                            list="expense-types"
+                                                            placeholder="Descripción o Seleccionar Tipo..."
+                                                            value={newItem.description}
+                                                            onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
+                                                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                                        />
+                                                    </div>
+                                                </td>
+                                                <td className="p-2">
+                                                    <Input
+                                                        type="number"
+                                                        min="1"
+                                                        value={newItem.quantity}
+                                                        onChange={(e) => setNewItem({ ...newItem, quantity: parseInt(e.target.value) || 1 })}
+                                                        className="bg-background border-input text-right"
+                                                    />
+                                                </td>
+                                                <td className="p-2">
+                                                    <div className="relative">
+                                                        <Input
+                                                            type="text"
+                                                            value={newItem.price}
+                                                            onChange={(e) => {
+                                                                const rawValue = e.target.value.replace(/[^0-9]/g, '');
+                                                                const formatted = rawValue.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+                                                                setNewItem({ ...newItem, price: formatted });
+                                                            }}
+                                                            className="bg-background border-input text-right pr-12"
+                                                            placeholder="0"
+                                                        />
+                                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-medium">FCFA</span>
+                                                    </div>
+                                                </td>
+                                                <td className="p-2 text-right font-medium text-muted-foreground">
+                                                    {formatCurrency(newItem.quantity * (parseFloat(newItem.price.replace(/\s/g, '')) || 0))}
+                                                </td>
+                                                <td className="p-2 text-center">
+                                                    <Button size="sm" onClick={addEditItem} disabled={!newItem.description || (parseFloat(newItem.price.replace(/\s/g, '')) || 0) <= 0} className="bg-blue-600 hover:bg-blue-700 text-white">
+                                                        <Plus className="h-4 w-4" />
+                                                    </Button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div className="flex justify-end items-center gap-4 border-t border-border pt-4">
+                                    <div className="text-right">
+                                        <div className="text-sm text-muted-foreground">Total Factura</div>
+                                        <div className="text-3xl font-bold text-foreground">
+                                            {formatCurrency(invoiceToEdit.items.reduce((sum: number, item: any) => sum + (item.quantity * item.price), 0))}
+                                        </div>
+                                    </div>
+                                    <Button
+                                        onClick={handleEditSubmit}
+                                        disabled={invoiceToEdit.items.length === 0 || isSubmitting}
+                                        className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg px-8 h-12 text-lg"
+                                    >
+                                        {isSubmitting ? (
+                                            <>
+                                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                                Guardando...
+                                            </>
+                                        ) : (
+                                            "Guardar Cambios"
                                         )}
                                     </Button>
                                 </div>

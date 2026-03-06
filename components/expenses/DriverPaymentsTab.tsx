@@ -5,14 +5,23 @@ import { useData } from "@/context/DataContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Plus, Search, Calendar, User, Loader2 } from "lucide-react";
+import { Plus, Search, Calendar, User, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 export default function DriverPaymentsTab() {
-    const { driverPayments, personnel, addDriverPayment } = useData();
+    const { driverPayments, personnel, addDriverPayment, deleteDriverPayment, currentUser, canDelete } = useData();
     const [showModal, setShowModal] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [confirmModal, setConfirmModal] = useState({
+        isOpen: false,
+        title: "",
+        description: "",
+        confirmText: "",
+        variant: "danger" as "danger" | "success" | "info" | undefined,
+        onConfirm: () => { }
+    });
 
     // Only show personnel with role "Conductor"
     const drivers = useMemo(() => personnel.filter(p => p.role === 'Conductor' && p.status === 'Activo'), [personnel]);
@@ -100,6 +109,30 @@ export default function DriverPaymentsTab() {
                                     </div>
                                     <div className="text-right">
                                         <div className="text-lg font-bold text-orange-600">-{formatCurrency(payment.amount)}</div>
+                                        {canDelete(currentUser) && (
+                                            <button
+                                                onClick={() => setConfirmModal({
+                                                    isOpen: true,
+                                                    title: "Eliminar Pago",
+                                                    description: "¿Estás seguro de eliminar este pago al conductor?",
+                                                    confirmText: "Eliminar",
+                                                    variant: "danger",
+                                                    onConfirm: async () => {
+                                                        try {
+                                                            await deleteDriverPayment(payment.id);
+                                                            toast.success("Pago eliminado");
+                                                        } catch {
+                                                            toast.error("Error al eliminar el pago");
+                                                        } finally {
+                                                            setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                                                        }
+                                                    }
+                                                })}
+                                                className="mt-1 p-1 hover:bg-red-50 rounded text-red-400 hover:text-red-700"
+                                            >
+                                                <Trash2 className="h-3.5 w-3.5" />
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="mt-4 pt-3 border-t border-border">
@@ -111,6 +144,16 @@ export default function DriverPaymentsTab() {
                     );
                 })}
             </div>
+
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                description={confirmModal.description}
+                confirmText={confirmModal.confirmText}
+                variant={confirmModal.variant}
+            />
 
             {showModal && (
                 <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
