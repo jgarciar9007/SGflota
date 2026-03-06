@@ -286,23 +286,20 @@ export function PublicFleet({ vehicles }: { vehicles: any[] }) {
                             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 text-blue-400 font-medium text-sm mb-6 border border-blue-500/20">
                                 <Star size={14} className="fill-blue-400" /> Premium Rentals en Guinea Ecuatorial
                             </div>
-                            <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-6 tracking-tighter leading-tight drop-shadow-sm">
-                                Tu viaje, <br className="hidden lg:block" /> a otro <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">nivel.</span>
+                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6 tracking-tighter leading-tight drop-shadow-sm">
+                                Alquiler de Vehículos en <br className="hidden lg:block" /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">Guinea Ecuatorial.</span>
                             </h1>
                             <p className="text-lg md:text-xl text-slate-300 mb-10 max-w-xl mx-auto lg:mx-0 font-light leading-relaxed">
                                 Ofrecemos la flota más moderna y exclusiva. Tarifas competitivas, confort superior y atención personalizada las 24 horas para hacer de tu viaje una experiencia inolvidable.
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                                <Button
-                                    size="lg"
-                                    className="bg-blue-600 hover:bg-blue-500 text-white rounded-full px-8 h-14 text-lg font-semibold shadow-blue-900/50 shadow-lg transition-transform hover:scale-105 active:scale-95 flex items-center gap-2"
-                                    onClick={() => {
-                                        document.getElementById('fleet')?.scrollIntoView({ behavior: 'smooth' });
-                                    }}
+                                <a
+                                    href="#fleet"
+                                    className="inline-flex justify-center items-center bg-blue-600 hover:bg-blue-500 text-white rounded-full px-8 h-14 text-lg font-semibold shadow-blue-900/50 shadow-lg transition-transform hover:scale-105 active:scale-95 gap-2"
                                 >
                                     <Car size={20} />
                                     Ver Flota Disponible
-                                </Button>
+                                </a>
                                 <Button
                                     size="lg"
                                     variant="outline"
