@@ -7,8 +7,18 @@ export default function robots(): MetadataRoute.Robots {
         rules: {
             userAgent: '*',
             allow: '/',
-            disallow: ['/api/', '/dashboard/', '/fleet/', '/clients/', '/rentals/', '/billing/', '/expenses/', '/reports/', '/settings/'],
-            // Disallowing private application routes from being indexed by search engines
+            disallow: [
+                '/api/',
+                '/dashboard/',
+                '/fleet/',
+                '/clients/',
+                '/rentals/',
+                '/billing/',
+                '/expenses/',
+                '/reports/',
+                '/settings/',
+                '/maintenance/'
+            ],
         },
         sitemap: `${baseUrl}/sitemap.xml`,
     }
