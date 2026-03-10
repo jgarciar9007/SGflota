@@ -162,8 +162,8 @@ async function main() {
         { name: 'Kia Picanto 2023', type: 'Compacto', range: 'Económico', price: 2500, year: 2023, plate: 'A-0001', ownership: 'Propia' },
         { name: 'Hyundai Tucson 2022', type: 'SUV', range: 'Medio', price: 4500, year: 2022, plate: 'G-0002', ownership: 'Propia' },
         { name: 'Toyota Corolla 2021', type: 'Sedán', range: 'Medio', price: 3500, year: 2021, plate: 'A-0003', ownership: 'Tercero', ownerName: owner1.name, ownerDni: owner1.dni },
-        { name: 'Honda CR-V 2020', type: 'SUV', range: 'Premium', price: 5500, year: 2020, plate: 'G-0004', ownership: 'Tercero', ownerName: owner2.name, ownerDni: owner2.dni },
-        { name: 'Chevrolet Tahoe 2024', type: 'SUV', range: 'Lujo', price: 12000, year: 2024, plate: 'L-0005', ownership: 'Propia' }
+        { name: 'Honda CR-V 2020', type: 'SUV', range: 'Estandar', price: 5500, year: 2020, plate: 'G-0004', ownership: 'Tercero', ownerName: owner2.name, ownerDni: owner2.dni },
+        { name: 'Chevrolet Tahoe 2024', type: 'SUV', range: 'Alto', price: 12000, year: 2024, plate: 'L-0005', ownership: 'Propia' }
     ];
 
     for (const v of vehicles) {

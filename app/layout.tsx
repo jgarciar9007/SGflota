@@ -77,7 +77,7 @@ const structuredData = {
   "image": "https://urban-rentals.es/logo.png",
   "url": "https://urban-rentals.es",
   "telephone": "+240 222 222 222", // Placeholder, you should update this in the layout or via settings
-  "description": "Servicio premium de alquiler de vehículos en Guinea Ecuatorial.",
+  "description": "Servicio profesional de alquiler de vehículos en Guinea Ecuatorial.",
   "address": {
     "@type": "PostalAddress",
     "addressLocality": "Malabo", // Adjust if main office is in Bata

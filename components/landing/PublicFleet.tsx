@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Car, Fuel, Map, User, MapPin, ChevronRight, Star, ChevronLeft, Circle, CircleDot, Gauge, ShieldCheck, Wallet } from "lucide-react";
+import { Car, Fuel, Map, User, MapPin, ChevronRight, ChevronLeft, Circle, CircleDot, Gauge, ShieldCheck, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/Dialog";
 import { Input } from "@/components/ui/Input";
@@ -63,11 +63,7 @@ function VehicleCard({ vehicle, handleBookClick, itemVariants }: { vehicle: any,
                         <Car size={80} strokeWidth={1} />
                     </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6 pointer-events-none">
-                    <span className="text-white text-xs font-medium flex items-center gap-2">
-                        <Star size={14} className="text-yellow-400 fill-yellow-400" /> Vehículo Premium
-                    </span>
-                </div>
+                {/* Removed badge overlay */}
 
                 {/* Carousel Controls */}
                 {images.length > 1 && (
@@ -284,13 +280,13 @@ export function PublicFleet({ vehicles }: { vehicles: any[] }) {
                             className="order-2 lg:order-1 text-center lg:text-left"
                         >
                             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 text-blue-400 font-medium text-sm mb-6 border border-blue-500/20">
-                                <Star size={14} className="fill-blue-400" /> Premium Rentals en Guinea Ecuatorial
+                                <Car size={14} /> Alquiler de Vehículos en Guinea Ecuatorial
                             </div>
                             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6 tracking-tighter leading-tight drop-shadow-sm">
                                 Alquiler de Vehículos en <br className="hidden lg:block" /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">Guinea Ecuatorial.</span>
                             </h1>
                             <p className="text-lg md:text-xl text-slate-300 mb-10 max-w-xl mx-auto lg:mx-0 font-light leading-relaxed">
-                                Ofrecemos la flota más moderna y exclusiva. Tarifas competitivas, confort superior y atención personalizada las 24 horas para hacer de tu viaje una experiencia inolvidable.
+                                Ofrecemos una flota moderna y variada. Tarifas competitivas, seguridad y atención personalizada las 24 horas para tu comodidad durante todo el trayecto.
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                                 <a
@@ -325,23 +321,13 @@ export function PublicFleet({ vehicles }: { vehicles: any[] }) {
                             >
                                 <div className="relative w-full h-full min-h-[400px] flex items-center justify-center lg:justify-end">
 
-                                    {/* Moving Speed Lines Container (Behind Car) */}
-                                    <div className="absolute inset-y-0 right-0 w-[150%] max-w-[1200px] pointer-events-none z-0 overflow-hidden flex flex-col justify-center gap-12">
-                                        <motion.div className="w-[800px] h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent blur-[2px] opacity-70"
-                                            animate={{ x: [800, -1000], opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 2.5, ease: "linear" }} />
-                                        <motion.div className="w-[1000px] h-2 bg-gradient-to-r from-transparent via-cyan-400 to-transparent blur-[3px] opacity-50"
-                                            animate={{ x: [1000, -1200], opacity: [0, 0.8, 0] }} transition={{ repeat: Infinity, duration: 3, delay: 0.8, ease: "linear" }} />
-                                        <motion.div className="w-[600px] h-1.5 bg-gradient-to-r from-transparent via-indigo-500 to-transparent blur-[1px] opacity-80"
-                                            animate={{ x: [600, -800], opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 2, delay: 1.5, ease: "linear" }} />
-                                        <motion.div className="w-[900px] h-1 bg-gradient-to-r from-transparent via-blue-400 to-transparent blur-[2px] opacity-60"
-                                            animate={{ x: [900, -1100], opacity: [0, 0.9, 0] }} transition={{ repeat: Infinity, duration: 3.5, delay: 0.3, ease: "linear" }} />
-                                    </div>
+                                    {/* Removed speed lines */}
 
                                     {/* Main Body (Static Car Image -> z-10) */}
                                     <div className="relative z-10 w-full max-w-[650px] aspect-[16/10] rounded-3xl overflow-hidden shadow-2xl border border-white/5">
                                         <img
                                             src="/hero-car.jpg"
-                                            alt="Urban Rentals Premium Fleet"
+                                            alt="Urban Rentals Fleet"
                                             className="w-full h-full object-cover object-center"
                                         />
                                         {/* Subtle overlay to blend perfectly with dark blue background */}
@@ -400,8 +386,8 @@ export function PublicFleet({ vehicles }: { vehicles: any[] }) {
                         {[
                             {
                                 icon: User,
-                                title: "Chofer Ejecutivo",
-                                desc: "Conductores profesionales entrenados para brindar una experiencia de viaje exclusiva y segura."
+                                title: "Servicio Profesional",
+                                desc: "Conductores calificados para brindar una experiencia de viaje segura y confiable."
                             },
                             {
                                 icon: ShieldCheck,
