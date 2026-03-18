@@ -79,11 +79,17 @@ mkdir -p /var/www/uploads
 # Next.js con 'output: standalone' requiere mover la carpeta public y .next/static
 if [ -d ".next/standalone" ]; then
     echo "Configurando Next.js standalone..."
-    # Copiar public (sin la carpeta uploads para poder reemplazarla con symlink)
+    # Copiar public
     cp -r public .next/standalone/ || true
     cp -r .next/static .next/standalone/.next/ || true
 
-    # Reemplazar uploads con symlink persistente en ambos lugares
+    # Mover archivos existentes si public/uploads no es un enlace
+    if [ -d "public/uploads" ] && [ ! -L "public/uploads" ]; then
+        echo "Moviendo archivos de public/uploads a /var/www/uploads..."
+        cp -r public/uploads/* /var/www/uploads/ 2>/dev/null || true
+    fi
+
+    # Reemplazar uploads con symlink persistente
     rm -rf public/uploads
     ln -sf /var/www/uploads public/uploads
     rm -rf .next/standalone/public/uploads
@@ -92,7 +98,13 @@ if [ -d ".next/standalone" ]; then
     PORT=3000 pm2 start .next/standalone/server.js --name "sgflota"
 else
     echo "Configuración regular de Next.js..."
-    # Reemplazar uploads con symlink persistente
+    
+    # Mover archivos existentes si public/uploads no es un enlace
+    if [ -d "public/uploads" ] && [ ! -L "public/uploads" ]; then
+        echo "Moviendo archivos de public/uploads a /var/www/uploads..."
+        cp -r public/uploads/* /var/www/uploads/ 2>/dev/null || true
+    fi
+
     rm -rf public/uploads
     ln -sf /var/www/uploads public/uploads
     pm2 start npm --name "sgflota" -- start

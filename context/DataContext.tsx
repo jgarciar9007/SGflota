@@ -282,6 +282,8 @@ interface DataContextType {
     addOwner: (owner: Omit<Owner, "id">) => void;
     updateOwner: (id: string, updates: Partial<Owner>) => void;
     deleteOwner: (id: string) => void;
+    deleteRefund: (id: string) => void;
+    deleteAccountPayable: (id: string) => void;
     addExpense: (expense: Omit<Expense, "id">) => void;
     updateExpense: (id: string, updates: Partial<Expense>) => void;
     deleteExpense: (id: string) => void;
@@ -584,6 +586,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
         const res = await apiCall('/api/refunds', 'PUT', { id, ...updates });
         setRefunds(prev => prev.map(r => r.id === id ? res : r));
     };
+    const deleteRefund = async (id: string) => {
+        await apiCall(`/api/refunds?id=${id}`, 'DELETE');
+        setRefunds(prev => prev.filter(r => r.id !== id));
+    };
 
     const addMaintenance = async (maintenance: Omit<Maintenance, "id">) => {
         const res = await apiCall('/api/maintenance', 'POST', maintenance);
@@ -634,6 +640,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const updateAccountPayable = async (id: string, updates: Partial<AccountPayable>) => {
         const res = await apiCall('/api/accounts-payable', 'PUT', { id, ...updates });
         setAccountsPayable(prev => prev.map(ap => ap.id === id ? res : ap));
+    };
+
+    const deleteAccountPayable = async (id: string) => {
+        await apiCall(`/api/accounts-payable?id=${id}`, 'DELETE');
+        setAccountsPayable(prev => prev.filter(ap => ap.id !== id));
     };
 
     const addCommercialAgent = async (agent: Omit<CommercialAgent, "id">) => {
@@ -798,6 +809,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
                 addUser,
                 updateUser,
                 deleteUser,
+                deleteRefund,
+                deleteAccountPayable,
                 addAccountPayable,
                 updateAccountPayable,
                 addCommercialAgent,

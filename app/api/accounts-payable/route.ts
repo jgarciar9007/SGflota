@@ -68,3 +68,17 @@ export async function PUT(request: Request) {
         return NextResponse.json({ error: error.message || 'Error updating account payable' }, { status: 500 });
     }
 }
+
+export async function DELETE(request: Request) {
+    try {
+        const { searchParams } = new URL(request.url);
+        const id = searchParams.get('id');
+        if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
+
+        await prisma.accountPayable.delete({ where: { id } });
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error("Error deleting payable:", error);
+        return NextResponse.json({ error: 'Error deleting payable' }, { status: 500 });
+    }
+}

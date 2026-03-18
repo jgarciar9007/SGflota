@@ -13,11 +13,15 @@ import { generateDocumentHtml } from "@/lib/reportUtils";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 
 export default function BillingPage() {
-    const { invoices, clients, rentals, vehicles, companySettings, addInvoice, updateInvoice, deleteInvoice, addPayment, updatePayment, deletePayment, payments, refunds, updateRefund, accountsPayable, updateAccountPayable, expenseCategories, currentUser, canEdit, canDelete } = useData();
+    const { invoices, clients, rentals, vehicles, companySettings, addInvoice, updateInvoice, deleteInvoice, addPayment, updatePayment, deletePayment, payments, refunds, updateRefund, deleteRefund, accountsPayable, updateAccountPayable, deleteAccountPayable, expenseCategories, currentUser, canEdit, canDelete } = useData();
     const [activeTab, setActiveTab] = useState<"invoices" | "history" | "refunds" | "payables">("invoices");
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [invoiceToEdit, setInvoiceToEdit] = useState<any>(null);
+    const [showEditRefundModal, setShowEditRefundModal] = useState(false);
+    const [refundToEdit, setRefundToEdit] = useState<any>(null);
+    const [showEditPayableModal, setShowEditPayableModal] = useState(false);
+    const [payableToEdit, setPayableToEdit] = useState<any>(null);
 
     // Multi-invoice payment state
     const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -943,6 +947,46 @@ export default function BillingPage() {
                                                     >
                                                         <Printer className="h-4 w-4" />
                                                     </Button>
+                                                    {canEdit(currentUser) && (
+                                                        <Button
+                                                            onClick={() => {
+                                                                setRefundToEdit(refund);
+                                                                setShowEditRefundModal(true);
+                                                            }}
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                                                        >
+                                                            <Edit className="h-4 w-4" />
+                                                        </Button>
+                                                    )}
+                                                    {canDelete(currentUser) && (
+                                                        <Button
+                                                            onClick={() => {
+                                                                setConfirmModal({
+                                                                    isOpen: true,
+                                                                    title: "Eliminar Reembolso",
+                                                                    description: "¿Estás seguro de que deseas eliminar este registro de reembolso? Esta acción no afecta la factura, solo elimina el registro histórico del reembolso.",
+                                                                    confirmText: "Eliminar",
+                                                                    variant: "danger",
+                                                                    onConfirm: async () => {
+                                                                        try {
+                                                                            await deleteRefund(refund.id);
+                                                                            toast.success("Reembolso eliminado");
+                                                                        } catch (e) {
+                                                                            toast.error("Error al eliminar");
+                                                                        }
+                                                                        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                                                                    }
+                                                                });
+                                                            }}
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="text-red-600 border-red-600 hover:bg-red-50"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -1053,6 +1097,46 @@ export default function BillingPage() {
                                                         >
                                                             <CreditCard className="mr-2 h-4 w-4" /> Pagar
                                                         </Button>
+                                                        {canEdit(currentUser) && (
+                                                            <Button
+                                                                onClick={() => {
+                                                                    setPayableToEdit(ap);
+                                                                    setShowEditPayableModal(true);
+                                                                }}
+                                                                variant="outline"
+                                                                size="sm"
+                                                                className="text-blue-600 border-blue-600 hover:bg-blue-50 ml-2"
+                                                            >
+                                                                <Edit className="h-4 w-4" />
+                                                            </Button>
+                                                        )}
+                                                        {canDelete(currentUser) && (
+                                                            <Button
+                                                                onClick={() => {
+                                                                    setConfirmModal({
+                                                                        isOpen: true,
+                                                                        title: "Eliminar Cuenta por Pagar",
+                                                                        description: "¿Estás seguro de que deseas eliminar esta cuenta por pagar? Si es una comisión automática, se perderá la referencia.",
+                                                                        confirmText: "Eliminar",
+                                                                        variant: "danger",
+                                                                        onConfirm: async () => {
+                                                                            try {
+                                                                                await deleteAccountPayable(ap.id);
+                                                                                toast.success("Cuenta por pagar eliminada");
+                                                                            } catch (e) {
+                                                                                toast.error("Error al eliminar");
+                                                                            }
+                                                                            setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                                                                        }
+                                                                    });
+                                                                }}
+                                                                variant="outline"
+                                                                size="sm"
+                                                                className="text-red-600 border-red-600 hover:bg-red-50 ml-2"
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>
