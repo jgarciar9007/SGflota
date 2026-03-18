@@ -175,6 +175,45 @@ export default function BillingPage() {
         }
     };
 
+    const handleEditRefundSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            await updateRefund(refundToEdit.id, {
+                amount: parseFloat(refundToEdit.amount),
+                reason: refundToEdit.reason,
+                date: new Date(refundToEdit.date).toISOString()
+            });
+            toast.success("Reembolso actualizado");
+            setShowEditRefundModal(false);
+            setRefundToEdit(null);
+        } catch (e: any) {
+            toast.error("Error al actualizar reembolso");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleEditPayableSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            await updateAccountPayable(payableToEdit.id, {
+                amount: parseFloat(payableToEdit.amount),
+                beneficiaryName: payableToEdit.beneficiaryName,
+                beneficiaryDni: payableToEdit.beneficiaryDni,
+                date: new Date(payableToEdit.date).toISOString()
+            });
+            toast.success("Cuenta por pagar actualizada");
+            setShowEditPayableModal(false);
+            setPayableToEdit(null);
+        } catch (e: any) {
+            toast.error("Error al actualizar cuenta por pagar");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     // --- Invoice Creation Logic ---
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -1704,6 +1743,118 @@ export default function BillingPage() {
                     </div>
                 )
             }
+
+            {/* Edit Refund Modal */}
+            {showEditRefundModal && refundToEdit && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <Card className="w-full max-w-lg border-border bg-card shadow-lg">
+                        <CardHeader className="flex flex-row items-center justify-between border-b border-border">
+                            <CardTitle className="text-foreground">Editar Reembolso</CardTitle>
+                            <Button variant="ghost" size="icon" onClick={() => setShowEditRefundModal(false)}>
+                                <X className="h-5 w-5" />
+                            </Button>
+                        </CardHeader>
+                        <CardContent className="p-6">
+                            <form onSubmit={handleEditRefundSubmit} className="space-y-4">
+                                <div>
+                                    <label className="text-sm font-medium">Beneficiario</label>
+                                    <div className="p-2 bg-muted rounded-md text-sm border border-border">
+                                        {clients.find(c => c.id === refundToEdit.clientId)?.name}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium">Monto</label>
+                                    <Input
+                                        type="number"
+                                        value={refundToEdit.amount}
+                                        onChange={(e) => setRefundToEdit({ ...refundToEdit, amount: e.target.value })}
+                                        className="bg-background"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium">Motivo</label>
+                                    <Input
+                                        value={refundToEdit.reason}
+                                        onChange={(e) => setRefundToEdit({ ...refundToEdit, reason: e.target.value })}
+                                        className="bg-background"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium">Fecha</label>
+                                    <Input
+                                        type="date"
+                                        value={new Date(refundToEdit.date).toISOString().split('T')[0]}
+                                        onChange={(e) => setRefundToEdit({ ...refundToEdit, date: e.target.value })}
+                                        className="bg-background"
+                                    />
+                                </div>
+                                <div className="flex justify-end gap-2 pt-4">
+                                    <Button type="submit" disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700 text-white">
+                                        {isSubmitting ? <Loader2 className="animate-spin h-4 w-4" /> : "Actualizar Reembolso"}
+                                    </Button>
+                                </div>
+                            </form>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
+
+            {/* Edit Payable Modal */}
+            {showEditPayableModal && payableToEdit && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <Card className="w-full max-w-lg border-border bg-card shadow-lg">
+                        <CardHeader className="flex flex-row items-center justify-between border-b border-border">
+                            <CardTitle className="text-foreground">Editar Cuenta por Pagar</CardTitle>
+                            <Button variant="ghost" size="icon" onClick={() => setShowEditPayableModal(false)}>
+                                <X className="h-5 w-5" />
+                            </Button>
+                        </CardHeader>
+                        <CardContent className="p-6">
+                            <form onSubmit={handleEditPayableSubmit} className="space-y-4">
+                                <div>
+                                    <label className="text-sm font-medium">Beneficiario</label>
+                                    <Input
+                                        value={payableToEdit.beneficiaryName}
+                                        onChange={(e) => setPayableToEdit({ ...payableToEdit, beneficiaryName: e.target.value })}
+                                        className="bg-background"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium">DNI Beneficiario</label>
+                                    <Input
+                                        value={payableToEdit.beneficiaryDni || ''}
+                                        onChange={(e) => setPayableToEdit({ ...payableToEdit, beneficiaryDni: e.target.value })}
+                                        className="bg-background"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium">Monto</label>
+                                    <Input
+                                        type="number"
+                                        value={payableToEdit.amount}
+                                        onChange={(e) => setPayableToEdit({ ...payableToEdit, amount: e.target.value })}
+                                        className="bg-background"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium">Fecha</label>
+                                    <Input
+                                        type="date"
+                                        value={new Date(payableToEdit.date).toISOString().split('T')[0]}
+                                        onChange={(e) => setPayableToEdit({ ...payableToEdit, date: e.target.value })}
+                                        className="bg-background"
+                                    />
+                                </div>
+                                <div className="flex justify-end gap-2 pt-4">
+                                    <Button type="submit" disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700 text-white">
+                                        {isSubmitting ? <Loader2 className="animate-spin h-4 w-4" /> : "Actualizar Cuenta"}
+                                    </Button>
+                                </div>
+                            </form>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
 
             <ConfirmModal
                 isOpen={confirmModal.isOpen}
