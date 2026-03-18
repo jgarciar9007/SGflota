@@ -4,6 +4,7 @@ import "./globals.css";
 import { DataProvider } from "@/context/DataContext";
 import { Toaster } from "sonner";
 import Providers from "./Providers";
+import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -113,6 +114,7 @@ export default function RootLayout({
           <DataProvider>
             {children}
             <Toaster position="top-right" richColors />
+            <WhatsAppButton />
           </DataProvider>
         </Providers>
       </body>

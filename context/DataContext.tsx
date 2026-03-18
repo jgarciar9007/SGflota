@@ -257,6 +257,7 @@ interface DataContextType {
     deleteClient: (id: string) => void;
     addRental: (rental: Omit<Rental, "id">) => void;
     updateRental: (id: string, updates: Partial<Rental>) => void;
+    deleteRental: (id: string) => void;
     endRental: (id: string, actualEndDate: string) => void;
     addInvoice: (invoice: Omit<Invoice, "id" | "invoiceNumber" | "status" | "paidAmount" | "payments"> & { date?: string }) => void;
     updateInvoice: (id: string, updates: Partial<Invoice>) => void;
@@ -484,6 +485,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const updateRental = async (id: string, updates: Partial<Rental>) => {
         const res = await apiCall('/api/rentals', 'PUT', { id, ...updates });
         setRentals(prev => prev.map(r => r.id === id ? res : r));
+    };
+
+    const deleteRental = async (id: string) => {
+        await apiCall(`/api/rentals?id=${id}`, 'DELETE');
+        setRentals(prev => prev.filter(r => r.id !== id));
+        // Refetch vehicles to update status just in case
+        const v = await apiCall('/api/vehicles', 'GET');
+        setVehicles(v);
     };
 
     const endRental = async (id: string, actualEndDate: string) => {
@@ -772,6 +781,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
                 deleteClient,
                 addRental,
                 updateRental,
+                deleteRental,
                 endRental,
                 addInvoice,
                 updateInvoice,

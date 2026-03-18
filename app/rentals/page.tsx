@@ -10,9 +10,10 @@ import { formatCurrency } from "@/lib/utils";
 import { toast } from "sonner";
 
 export default function RentalsPage() {
-    const { rentals, vehicles, clients, addRental, endRental, currentUser, canEdit, commercialAgents } = useData();
+    const { rentals, vehicles, clients, addRental, updateRental, deleteRental, endRental, currentUser, canEdit, canDelete, commercialAgents } = useData();
     const [showAddModal, setShowAddModal] = useState(false);
     const [showReturnModal, setShowReturnModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
     const [selectedRentalId, setSelectedRentalId] = useState<string | null>(null);
     const [returnDate, setReturnDate] = useState(new Date().toISOString().split("T")[0]);
 
@@ -63,6 +64,42 @@ export default function RentalsPage() {
             setShowReturnModal(false);
             setSelectedRentalId(null);
         }
+    };
+
+    const handleEditSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (selectedRentalId) {
+            try {
+                await updateRental(selectedRentalId, formData);
+                setShowEditModal(false);
+                toast.success("Renta actualizada exitosamente");
+            } catch (error: any) {
+                toast.error(error.message || "Error al actualizar la renta");
+            }
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (window.confirm("¿Estás seguro de que deseas eliminar esta renta?")) {
+            try {
+                await deleteRental(id);
+                toast.success("Renta eliminada exitosamente");
+            } catch (error: any) {
+                toast.error(error.message || "Error al eliminar la renta");
+            }
+        }
+    };
+
+    const initiateEdit = (rental: any) => {
+        setSelectedRentalId(rental.id);
+        setFormData({
+            vehicleId: rental.vehicleId,
+            clientId: rental.clientId,
+            startDate: new Date(rental.startDate).toISOString().split("T")[0],
+            endDate: rental.endDate ? new Date(rental.endDate).toISOString().split("T")[0] : "",
+            commercialAgent: rental.commercialAgent || ""
+        });
+        setShowEditModal(true);
     };
 
     const activeRentals = rentals ? rentals.filter((r) => r && r.status === "Activo") : [];
@@ -150,15 +187,38 @@ export default function RentalsPage() {
                                                 <p className="text-xs text-muted-foreground">Total Acumulado</p>
                                                 <p className="text-lg font-bold text-foreground">{formatCurrency(currentTotal)}</p>
                                             </div>
-                                            {canEdit(currentUser) && (
-                                                <Button
-                                                    onClick={() => handleReturnClick(rental)}
-                                                    variant="outline"
-                                                    className="border-green-200 bg-green-50 hover:bg-green-100 text-green-700"
-                                                >
-                                                    Finalizar
-                                                </Button>
-                                            )}
+                                             <div className="flex gap-2">
+                                                {canEdit(currentUser) && (
+                                                    <>
+                                                        <Button
+                                                            onClick={() => initiateEdit(rental)}
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700"
+                                                        >
+                                                            Editar
+                                                        </Button>
+                                                        <Button
+                                                            onClick={() => handleReturnClick(rental)}
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="border-green-200 bg-green-50 hover:bg-green-100 text-green-700"
+                                                        >
+                                                            Finalizar
+                                                        </Button>
+                                                    </>
+                                                )}
+                                                {canDelete(currentUser) && (
+                                                    <Button
+                                                        onClick={() => handleDelete(rental.id)}
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                    >
+                                                        Eliminar
+                                                    </Button>
+                                                )}
+                                             </div>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -200,7 +260,29 @@ export default function RentalsPage() {
                                             </div>
                                             <div className="text-right">
                                                 <p className="text-xs text-muted-foreground">Total</p>
-                                                <p className="text-lg font-bold text-foreground">{formatCurrency(rental.totalAmount || 0)}</p>
+                                                 <p className="text-lg font-bold text-foreground">{formatCurrency(rental.totalAmount || 0)}</p>
+                                            </div>
+                                            <div className="flex justify-end gap-2">
+                                                {canEdit(currentUser) && (
+                                                    <Button
+                                                        onClick={() => initiateEdit(rental)}
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700"
+                                                    >
+                                                        Editar
+                                                    </Button>
+                                                )}
+                                                {canDelete(currentUser) && (
+                                                    <Button
+                                                        onClick={() => handleDelete(rental.id)}
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                    >
+                                                        Eliminar
+                                                    </Button>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -335,6 +417,99 @@ export default function RentalsPage() {
                             <CardFooter className="border-t border-border pt-6">
                                 <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white">
                                     Confirmar Devolución
+                                </Button>
+                            </CardFooter>
+                        </form>
+                    </Card>
+                </div>
+            )}
+
+            {/* Edit Modal */}
+            {showEditModal && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <Card className="w-full max-w-md border-border bg-card shadow-lg">
+                        <CardHeader className="flex flex-row items-center justify-between border-b border-border">
+                            <CardTitle className="text-foreground">Editar Renta</CardTitle>
+                            <button onClick={() => setShowEditModal(false)} className="text-muted-foreground hover:text-foreground">
+                                <X className="h-5 w-5" />
+                            </button>
+                        </CardHeader>
+                        <form onSubmit={handleEditSubmit}>
+                            <CardContent className="space-y-4 pt-6">
+                                <div>
+                                    <label className="text-sm text-foreground font-medium">Vehículo</label>
+                                    <select
+                                        value={formData.vehicleId}
+                                        onChange={(e) => setFormData({ ...formData, vehicleId: e.target.value })}
+                                        className="w-full h-10 px-3 rounded-md bg-background border border-input text-foreground mt-1"
+                                        required
+                                        disabled // Don't allow changing vehicle during edit to avoid complications
+                                    >
+                                        <option value="">Seleccionar Vehículo</option>
+                                        {vehicles.map((v) => (
+                                            <option key={v.id} value={v.id}>
+                                                {v.name} ({v.plate})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="text-sm text-foreground font-medium">Cliente</label>
+                                    <select
+                                        value={formData.clientId}
+                                        onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
+                                        className="w-full h-10 px-3 rounded-md bg-background border border-input text-foreground mt-1"
+                                        required
+                                    >
+                                        <option value="">Seleccionar Cliente</option>
+                                        {clients.map((c) => (
+                                            <option key={c.id} value={c.id}>
+                                                {c.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="text-sm text-foreground font-medium">Agente Comercial</label>
+                                    <select
+                                        value={formData.commercialAgent || ""}
+                                        onChange={(e) => setFormData({ ...formData, commercialAgent: e.target.value })}
+                                        className="w-full h-10 px-3 rounded-md bg-background border border-input text-foreground mt-1"
+                                    >
+                                        <option value="">Ninguno</option>
+                                        {commercialAgents.map((agent) => (
+                                            <option key={agent.id} value={agent.name}>
+                                                {agent.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-sm text-foreground font-medium">Fecha Inicio</label>
+                                        <Input
+                                            type="date"
+                                            value={formData.startDate}
+                                            onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                                            className="bg-background border-input text-foreground mt-1"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm text-foreground font-medium">Fecha Fin</label>
+                                        <Input
+                                            type="date"
+                                            value={formData.endDate}
+                                            onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                                            className="bg-background border-input text-foreground mt-1"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                            </CardContent>
+                            <CardFooter className="border-t border-border pt-6">
+                                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                                    Actualizar Renta
                                 </Button>
                             </CardFooter>
                         </form>
