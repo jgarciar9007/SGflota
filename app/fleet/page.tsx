@@ -31,7 +31,8 @@ export default function FleetPage() {
         ownership: "Propia",
         seats: 5,
         ownerName: "",
-        ownerDni: ""
+        ownerDni: "",
+        status: "Disponible" as "Disponible" | "Rentado" | "Mantenimiento"
     });
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,7 +76,7 @@ export default function FleetPage() {
             ...vehicleData,
             price: parseFloat(vehicleData.price),
             year: parseInt(vehicleData.year.toString()),
-            status: "Disponible" as const,
+            status: vehicleData.status || "Disponible",
             ownership: vehicleData.ownership as "Propia" | "Tercero",
             seats: parseInt(vehicleData.seats.toString()) || 5,
         };
@@ -100,7 +101,8 @@ export default function FleetPage() {
             ownership: "Propia",
             seats: 5,
             ownerName: "",
-            ownerDni: ""
+            ownerDni: "",
+            status: "Disponible"
         });
     };
 
@@ -269,7 +271,8 @@ export default function FleetPage() {
                                                 ownership: car.ownership,
                                                 seats: car.seats || 5,
                                                 ownerName: car.ownerName || "",
-                                                ownerDni: car.ownerDni || ""
+                                                ownerDni: car.ownerDni || "",
+                                                status: car.status as any
                                             });
                                             setShowAddModal(true);
                                         }}>
@@ -353,7 +356,8 @@ export default function FleetPage() {
                                                     ownership: car.ownership,
                                                     seats: car.seats || 5,
                                                     ownerName: car.ownerName || "",
-                                                    ownerDni: car.ownerDni || ""
+                                                    ownerDni: car.ownerDni || "",
+                                                    status: car.status as any
                                                 });
                                                 setShowAddModal(true);
                                             }}>
@@ -434,11 +438,35 @@ export default function FleetPage() {
                                             </select>
                                         </div>
                                         <div>
+                                            <label className="text-sm text-foreground font-medium">Estado</label>
+                                            <select
+                                                value={formData.status}
+                                                onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                                                className="w-full h-10 px-3 rounded-md bg-background border border-input text-foreground mt-1"
+                                            >
+                                                <option value="Disponible">Disponible</option>
+                                                <option value="Rentado">Rentado</option>
+                                                <option value="Mantenimiento">Mantenimiento</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
                                             <label className="text-sm text-foreground font-medium">Año</label>
                                             <Input
                                                 type="number"
                                                 value={formData.year}
                                                 onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) })}
+                                                className="bg-background border-input text-foreground mt-1"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-sm text-foreground font-medium">Plazas</label>
+                                            <Input
+                                                type="number"
+                                                value={formData.seats}
+                                                onChange={(e) => setFormData({ ...formData, seats: parseInt(e.target.value) })}
                                                 className="bg-background border-input text-foreground mt-1"
                                                 required
                                             />

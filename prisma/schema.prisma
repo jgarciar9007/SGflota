@@ -60,8 +60,7 @@ model Rental {
   status          String   // "Activo" | "Finalizado"
   totalAmount     Int?
   commercialAgent String?
-
-  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
   client  Client  @relation(fields: [clientId], references: [id])
   invoice Invoice?
   accountsPayable AccountPayable[]
@@ -128,8 +127,7 @@ model Maintenance {
   cost        Int
   status      String   // "Programado" | "En Proceso" | "Completado"
   type        String?
-
-  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
