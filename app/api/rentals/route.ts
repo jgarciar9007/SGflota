@@ -168,7 +168,17 @@ export async function DELETE(request: Request) {
             }, { status: 400 });
         }
 
-        await prisma.rental.delete({ where: { id } });
+        await prisma.$transaction(async (tx) => {
+            const rental = await tx.rental.findUnique({ where: { id } });
+            if (rental) {
+                await tx.vehicle.update({
+                    where: { id: rental.vehicleId },
+                    data: { status: 'Disponible' }
+                });
+            }
+            await tx.rental.delete({ where: { id } });
+        });
+
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error(error);
