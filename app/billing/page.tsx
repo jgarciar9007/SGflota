@@ -1220,7 +1220,7 @@ export default function BillingPage() {
             {
                 showPaymentModal && (
                     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                        <Card className="w-full max-w-2xl border-border bg-card">
+                        <Card className="w-full max-w-2xl border-border bg-card max-h-[90vh] overflow-y-auto">
                             <CardHeader className="flex flex-row items-center justify-between border-b border-border">
                                 <CardTitle className="text-foreground">Registrar Pago</CardTitle>
                                 <Button variant="ghost" size="icon" onClick={() => setShowPaymentModal(false)} className="text-muted-foreground hover:text-foreground">
@@ -1525,7 +1525,7 @@ export default function BillingPage() {
             {
                 showEditReceiptModal && (
                     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                        <Card className="w-full max-w-lg border-border bg-card shadow-lg flex flex-col">
+                        <Card className="w-full max-w-lg border-border bg-card shadow-lg flex flex-col max-h-[90vh] overflow-y-auto">
                             <CardHeader className="flex flex-row items-center justify-between border-b border-border">
                                 <CardTitle className="text-foreground">Editar Recibo</CardTitle>
                                 <Button variant="ghost" size="icon" onClick={() => setShowEditReceiptModal(false)} className="text-muted-foreground hover:text-foreground">
@@ -1747,7 +1747,7 @@ export default function BillingPage() {
             {/* Edit Refund Modal */}
             {showEditRefundModal && refundToEdit && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <Card className="w-full max-w-lg border-border bg-card shadow-lg">
+                    <Card className="w-full max-w-lg border-border bg-card shadow-lg max-h-[90vh] overflow-y-auto">
                         <CardHeader className="flex flex-row items-center justify-between border-b border-border">
                             <CardTitle className="text-foreground">Editar Reembolso</CardTitle>
                             <Button variant="ghost" size="icon" onClick={() => setShowEditRefundModal(false)}>
@@ -1802,7 +1802,7 @@ export default function BillingPage() {
             {/* Edit Payable Modal */}
             {showEditPayableModal && payableToEdit && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <Card className="w-full max-w-lg border-border bg-card shadow-lg">
+                    <Card className="w-full max-w-lg border-border bg-card shadow-lg max-h-[90vh] overflow-y-auto">
                         <CardHeader className="flex flex-row items-center justify-between border-b border-border">
                             <CardTitle className="text-foreground">Editar Cuenta por Pagar</CardTitle>
                             <Button variant="ghost" size="icon" onClick={() => setShowEditPayableModal(false)}>

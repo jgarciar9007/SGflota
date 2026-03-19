@@ -236,7 +236,7 @@ export default function OwnersTab() {
 
             {showModal && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <Card className="w-full max-w-md border-border bg-card shadow-lg animate-in fade-in zoom-in duration-200">
+                    <Card className="w-full max-w-md border-border bg-card shadow-lg animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
                         <CardHeader className="border-b border-border">
                             <CardTitle className="text-foreground">{editingId ? "Editar Propietario" : "Nuevo Propietario"}</CardTitle>
                         </CardHeader>

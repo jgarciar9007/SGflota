@@ -481,7 +481,7 @@ export default function SettingsPage() {
             {/* User Modal */}
             {isUserModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-card border border-border rounded-lg shadow-xl w-full max-w-md animate-in fade-in zoom-in duration-200">
+                    <div className="bg-card border border-border rounded-lg shadow-xl w-full max-w-md animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
                         <div className="flex items-center justify-between p-4 border-b border-border">
                             <h3 className="text-lg font-semibold text-foreground">
                                 {editingUser ? "Editar Usuario" : "Nuevo Usuario"}

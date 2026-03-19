@@ -8,7 +8,7 @@ const Dialog = ({ open, onOpenChange, children }: { open?: boolean, onOpenChange
     if (!open) return null;
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => onOpenChange?.(false)}>
-            <div data-state={open ? 'open' : 'closed'} className="relative z-50 grid w-full max-w-lg gap-4 border bg-background p-6 shadow-lg duration-200 sm:rounded-lg" onClick={e => e.stopPropagation()}>
+            <div data-state={open ? 'open' : 'closed'} className="relative z-50 grid w-full max-w-lg gap-4 border bg-background p-6 shadow-lg duration-200 sm:rounded-lg max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
                 {children}
                 <button
                     className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"

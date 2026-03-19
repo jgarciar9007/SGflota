@@ -137,7 +137,7 @@ export default function MaintenanceTab() {
             {/* Add Maintenance Modal */}
             {showAddModal && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <Card className="w-full max-w-md border-border bg-card shadow-xl">
+                    <Card className="w-full max-w-md border-border bg-card shadow-xl max-h-[90vh] overflow-y-auto">
                         <CardHeader className="flex flex-row items-center justify-between border-b border-border">
                             <CardTitle className="text-foreground">Programar Mantenimiento</CardTitle>
                             <button onClick={() => setShowAddModal(false)} className="text-muted-foreground hover:text-foreground">

@@ -299,7 +299,7 @@ export default function RentalsPage() {
             {/* Add Rental Modal */}
             {showAddModal && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <Card className="w-full max-w-md border-border bg-card shadow-lg">
+                    <Card className="w-full max-w-md border-border bg-card shadow-lg max-h-[90vh] overflow-y-auto">
                         <CardHeader className="flex flex-row items-center justify-between border-b border-border">
                             <CardTitle className="text-foreground">Nueva Renta</CardTitle>
                             <button onClick={() => setShowAddModal(false)} className="text-muted-foreground hover:text-foreground">
@@ -391,7 +391,7 @@ export default function RentalsPage() {
             {/* Return Modal */}
             {showReturnModal && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <Card className="w-full max-w-sm border-border bg-card shadow-lg">
+                    <Card className="w-full max-w-sm border-border bg-card shadow-lg max-h-[90vh] overflow-y-auto">
                         <CardHeader className="flex flex-row items-center justify-between border-b border-border">
                             <CardTitle className="text-foreground">Finalizar Renta</CardTitle>
                             <button onClick={() => setShowReturnModal(false)} className="text-muted-foreground hover:text-foreground">
@@ -427,7 +427,7 @@ export default function RentalsPage() {
             {/* Edit Modal */}
             {showEditModal && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <Card className="w-full max-w-md border-border bg-card shadow-lg">
+                    <Card className="w-full max-w-md border-border bg-card shadow-lg max-h-[90vh] overflow-y-auto">
                         <CardHeader className="flex flex-row items-center justify-between border-b border-border">
                             <CardTitle className="text-foreground">Editar Renta</CardTitle>
                             <button onClick={() => setShowEditModal(false)} className="text-muted-foreground hover:text-foreground">

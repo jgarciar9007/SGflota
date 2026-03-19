@@ -263,7 +263,7 @@ export default function AgentsTab() {
             {/* Create/Edit Modal */}
             {showModal && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <Card className="w-full max-w-md border-border bg-card shadow-lg">
+                    <Card className="w-full max-w-md border-border bg-card shadow-lg max-h-[90vh] overflow-y-auto">
                         <CardHeader className="border-b border-border">
                             <CardTitle className="text-foreground">{editingId ? "Editar Agente" : "Nuevo Agente Comercial"}</CardTitle>
                         </CardHeader>

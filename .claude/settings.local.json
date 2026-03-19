@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sshpass -p 'Herve2026*GE' ssh -o StrictHostKeyChecking=no root@187.77.163.74 \"cd /var/www/SGflota && git pull origin main\")",
+      "Bash(pip install:*)",
+      "Bash(pip3 install:*)",
+      "Bash(python3 -c \"import fabric; print\\(''ok''\\)\")",
+      "Bash(python3 -c \":*)",
+      "Bash(py -3 -c \":*)"
+    ]
+  }
+}

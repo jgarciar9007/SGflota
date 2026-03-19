@@ -148,7 +148,7 @@ export default function OwnersPage() {
 
             {showModal && (
                 <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <Card className="w-full max-w-md border-border bg-background">
+                    <Card className="w-full max-w-md border-border bg-background max-h-[90vh] overflow-y-auto">
                         <CardHeader className="border-b border-border">
                             <CardTitle className="text-foreground">{editingId ? "Editar Propietario" : "Nuevo Propietario"}</CardTitle>
                         </CardHeader>
