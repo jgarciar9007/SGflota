@@ -204,7 +204,7 @@ REGLAS ESTRICTAS:
           "X-Title": "Urban Rentals Chatbot",
         },
         body: JSON.stringify({
-          model: "mistralai/mistral-7b-instruct:free",
+          model: "google/gemma-3-12b-it:free",
           messages: [{ role: "system", content: systemPrompt }, ...messages],
           max_tokens: 400,
           temperature: 0.3,
