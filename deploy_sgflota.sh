@@ -52,6 +52,7 @@ cat > .env <<EOF
 DATABASE_URL="postgresql://jorge:J*rg3.90@localhost:5432/urban-rentals?schema=public"
 NEXTAUTH_URL="http://187.77.163.74"
 NEXTAUTH_SECRET="$(openssl rand -hex 32)"
+OPENROUTER_API_KEY="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"
 EOF
 
 # 5. Instalación de Dependencias y Build
