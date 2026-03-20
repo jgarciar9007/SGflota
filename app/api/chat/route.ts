@@ -205,7 +205,12 @@ REGLAS ESTRICTAS:
         },
         body: JSON.stringify({
           model: "google/gemma-3-12b-it:free",
-          messages: [{ role: "system", content: systemPrompt }, ...messages],
+          // Gemma no soporta rol "system" — inyectamos contexto como primer turno user/assistant
+          messages: [
+            { role: "user", content: systemPrompt },
+            { role: "assistant", content: "Entendido. Soy el asistente de Urban Rentals y usaré solo los datos proporcionados para responder." },
+            ...messages,
+          ],
           max_tokens: 400,
           temperature: 0.3,
         }),
