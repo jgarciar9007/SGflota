@@ -28,10 +28,24 @@ function buildSmartReply(userMsg: string, vehicles: Vehicle[]): string {
     return `¡Hola! 👋 Bienvenido a Urban Rentals.\n\nTenemos ${disponibles.length} vehículos disponibles ahora mismo. ¿En qué puedo ayudarte?`;
   }
 
-  // Búsqueda por número de plazas
-  const seatsMatch = q.match(/(\d+)\s*plazas?/);
-  if (seatsMatch) {
-    const numSeats = parseInt(seatsMatch[1]);
+  // Búsqueda por número de plazas (más de X / menos de X / exactamente X)
+  const seatsMoreMatch = q.match(/(?:mas\s+de|superior\s+a|mayor\s+a)\s*(\d+)\s*plazas?/);
+  const seatsLessMatch = q.match(/(?:menos\s+de|inferior\s+a)\s*(\d+)\s*plazas?/);
+  const seatsExactMatch = q.match(/(\d+)\s*plazas?/);
+  if (seatsMoreMatch) {
+    const n = parseInt(seatsMoreMatch[1]);
+    const filtered = disponibles.filter((v) => v.seats > n);
+    if (filtered.length === 0) return `No tenemos vehículos disponibles con más de ${n} plazas. Contáctanos al +240 222 090 172.`;
+    return `Vehículos disponibles con más de ${n} plazas:\n\n${filtered.map((v) => `• ${v.name} (${v.year}) — ${v.seats} plazas — ${fmt(v.price)}/día`).join("\n")}\n\n¿Te interesa alguno?`;
+  }
+  if (seatsLessMatch) {
+    const n = parseInt(seatsLessMatch[1]);
+    const filtered = disponibles.filter((v) => v.seats < n);
+    if (filtered.length === 0) return `No tenemos vehículos disponibles con menos de ${n} plazas. Contáctanos al +240 222 090 172.`;
+    return `Vehículos disponibles con menos de ${n} plazas:\n\n${filtered.map((v) => `• ${v.name} (${v.year}) — ${v.seats} plazas — ${fmt(v.price)}/día`).join("\n")}\n\n¿Te interesa alguno?`;
+  }
+  if (seatsExactMatch) {
+    const numSeats = parseInt(seatsExactMatch[1]);
     const withSeats = disponibles.filter((v) => v.seats === numSeats);
     if (withSeats.length === 0) return `No tenemos vehículos disponibles de ${numSeats} plazas en este momento. Contáctanos al +240 222 090 172 para más opciones.`;
     return `Vehículos disponibles de ${numSeats} plazas:\n\n${withSeats.map((v) => `• ${v.name} (${v.year}) — ${fmt(v.price)}/día`).join("\n")}\n\n¿Te interesa alguno?`;
@@ -190,7 +204,7 @@ REGLAS ESTRICTAS:
           "X-Title": "Urban Rentals Chatbot",
         },
         body: JSON.stringify({
-          model: "meta-llama/llama-3.1-8b-instruct:free",
+          model: "mistralai/mistral-7b-instruct:free",
           messages: [{ role: "system", content: systemPrompt }, ...messages],
           max_tokens: 400,
           temperature: 0.3,
