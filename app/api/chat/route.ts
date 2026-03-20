@@ -28,6 +28,15 @@ function buildSmartReply(userMsg: string, vehicles: Vehicle[]): string {
     return `¡Hola! 👋 Bienvenido a Urban Rentals.\n\nTenemos ${disponibles.length} vehículos disponibles ahora mismo. ¿En qué puedo ayudarte?`;
   }
 
+  // Búsqueda por número de plazas
+  const seatsMatch = q.match(/(\d+)\s*plazas?/);
+  if (seatsMatch) {
+    const numSeats = parseInt(seatsMatch[1]);
+    const withSeats = disponibles.filter((v) => v.seats === numSeats);
+    if (withSeats.length === 0) return `No tenemos vehículos disponibles de ${numSeats} plazas en este momento. Contáctanos al +240 222 090 172 para más opciones.`;
+    return `Vehículos disponibles de ${numSeats} plazas:\n\n${withSeats.map((v) => `• ${v.name} (${v.year}) — ${fmt(v.price)}/día`).join("\n")}\n\n¿Te interesa alguno?`;
+  }
+
   // Disponibilidad general
   if (/disponible|disponibilidad|libre|alquilar|rentar|que.*tienen|que.*hay|flota/.test(q)) {
     if (disponibles.length === 0) return "En este momento no tenemos vehículos disponibles. Contáctanos al +240 222 090 172 para más información.";
@@ -141,7 +150,14 @@ ${vehicleList}
 
 Disponibles: ${disponibles.length} | Rentados: ${rentados.length} | Mantenimiento: ${mantenimiento.length}
 
-REGLAS: Responde en español, sé conciso (máx 6 líneas), usa solo datos reales de arriba, para reservas indica el WhatsApp +240 222 090 172, no inventes fechas de liberación.`;
+REGLAS ESTRICTAS:
+- Responde ÚNICAMENTE lo que se pregunta, sin añadir información no solicitada.
+- Si preguntan por vehículos de X plazas, muestra SOLO los que tienen exactamente esas plazas.
+- Si preguntan por un vehículo concreto, responde solo sobre ese vehículo.
+- Máximo 5 líneas por respuesta. Sé directo y preciso.
+- Usa solo datos reales de la flota de arriba. No inventes nada.
+- Para reservas o preguntas que no puedas resolver, indica WhatsApp +240 222 090 172.
+- No inventes fechas de liberación de vehículos rentados.`;
 
       const aiRes = await fetch(OPENROUTER_URL, {
         method: "POST",
@@ -154,8 +170,8 @@ REGLAS: Responde en español, sé conciso (máx 6 líneas), usa solo datos reale
         body: JSON.stringify({
           model: "google/gemini-flash-1.5",
           messages: [{ role: "system", content: systemPrompt }, ...messages],
-          max_tokens: 500,
-          temperature: 0.7,
+          max_tokens: 300,
+          temperature: 0.3,
         }),
       });
 
