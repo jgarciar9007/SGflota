@@ -37,6 +37,28 @@ function buildSmartReply(userMsg: string, vehicles: Vehicle[]): string {
     return `Vehículos disponibles de ${numSeats} plazas:\n\n${withSeats.map((v) => `• ${v.name} (${v.year}) — ${fmt(v.price)}/día`).join("\n")}\n\n¿Te interesa alguno?`;
   }
 
+  // Filtro por precio máximo (menos de X / hasta X / por menos de X)
+  const priceMaxMatch = q.match(/(?:menos\s+de|hasta|por\s+menos\s+de)\s*([\d\s.,]+)/);
+  if (priceMaxMatch) {
+    const priceLimit = parseInt(priceMaxMatch[1].replace(/[\s.,]/g, ""));
+    if (!isNaN(priceLimit)) {
+      const filtered = disponibles.filter((v) => v.price < priceLimit);
+      if (filtered.length === 0) return `No tenemos vehículos disponibles por menos de ${fmt(priceLimit)}. El más económico es ${fmt(Math.min(...disponibles.map(v => v.price)))}/día. ¿Te interesa?`;
+      return `Vehículos disponibles por menos de ${fmt(priceLimit)}/día:\n\n${filtered.map((v) => `• ${v.name} (${v.year}) — ${v.seats} plazas — ${fmt(v.price)}/día`).join("\n")}\n\n¿Te interesa alguno?`;
+    }
+  }
+
+  // Filtro por precio mínimo (más de X / desde X)
+  const priceMinMatch = q.match(/(?:mas\s+de|desde)\s*([\d\s.,]+)/);
+  if (priceMinMatch) {
+    const priceLimit = parseInt(priceMinMatch[1].replace(/[\s.,]/g, ""));
+    if (!isNaN(priceLimit)) {
+      const filtered = disponibles.filter((v) => v.price > priceLimit);
+      if (filtered.length === 0) return `No tenemos vehículos disponibles por más de ${fmt(priceLimit)}. Contáctanos al +240 222 090 172.`;
+      return `Vehículos disponibles por más de ${fmt(priceLimit)}/día:\n\n${filtered.map((v) => `• ${v.name} (${v.year}) — ${v.seats} plazas — ${fmt(v.price)}/día`).join("\n")}\n\n¿Te interesa alguno?`;
+    }
+  }
+
   // Disponibilidad general
   if (/disponible|disponibilidad|libre|alquilar|rentar|que.*tienen|que.*hay|flota/.test(q)) {
     if (disponibles.length === 0) return "En este momento no tenemos vehículos disponibles. Contáctanos al +240 222 090 172 para más información.";
@@ -168,9 +190,9 @@ REGLAS ESTRICTAS:
           "X-Title": "Urban Rentals Chatbot",
         },
         body: JSON.stringify({
-          model: "google/gemini-flash-1.5",
+          model: "meta-llama/llama-3.1-8b-instruct:free",
           messages: [{ role: "system", content: systemPrompt }, ...messages],
-          max_tokens: 300,
+          max_tokens: 400,
           temperature: 0.3,
         }),
       });
@@ -179,9 +201,13 @@ REGLAS ESTRICTAS:
         const data = await aiRes.json();
         const reply = data.choices?.[0]?.message?.content;
         if (reply) return NextResponse.json({ reply });
+        console.warn("OpenRouter OK pero sin contenido en respuesta:", JSON.stringify(data));
+      } else {
+        const errText = await aiRes.text();
+        console.warn(`OpenRouter falló [${aiRes.status}]: ${errText}`);
       }
       // Si la IA falla → fallback inteligente
-      console.warn("OpenRouter falló, usando fallback inteligente");
+      console.warn("Usando fallback inteligente");
     }
 
     // ── Fallback inteligente con datos reales ─────────────────────────────────
