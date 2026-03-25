@@ -26,12 +26,21 @@ echo "=== [4/5] Build ==="
 npm run build
 
 echo "=== [5/5] Copiar assets y reiniciar ==="
+
+# Asegurar que el directorio persistente de uploads existe
+mkdir -p /var/www/uploads/vehicles
+
+# Restaurar symlink en public/uploads (se puede romper tras git pull o build)
+rm -rf public/uploads
+ln -sf /var/www/uploads public/uploads
+
 if [ -d ".next/standalone" ]; then
-    # Copiar public (sin seguir el symlink de uploads)
-    cp -r public .next/standalone/ 2>/dev/null || true
+    # Copiar public EXCLUYENDO uploads (se gestiona como symlink a /var/www/uploads)
+    mkdir -p .next/standalone/public
+    find public -maxdepth 1 ! -name 'uploads' ! -name 'public' -exec cp -r {} .next/standalone/public/ \; 2>/dev/null || true
     # Copiar chunks estáticos (crítico para que el navegador cargue JS)
     cp -r .next/static .next/standalone/.next/ || true
-    # Reparar symlink de uploads (evita loops infinitos)
+    # Recrear symlink de uploads en standalone
     rm -rf .next/standalone/public/uploads
     ln -sf /var/www/uploads .next/standalone/public/uploads
 fi
