@@ -50,7 +50,7 @@ fi
 echo "Configurando archivo .env..."
 cat > .env <<EOF
 DATABASE_URL="postgresql://jorge:J*rg3.90@localhost:5432/urban-rentals?schema=public"
-NEXTAUTH_URL="http://187.77.163.74"
+NEXTAUTH_URL="https://urban-rentals.es"
 NEXTAUTH_SECRET="$(openssl rand -hex 32)"
 OPENROUTER_API_KEY="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"
 EOF
@@ -116,7 +116,7 @@ pm2 save
 pm2 startup systemd -u root --hp /root || true
 pm2 save
 
-# 7. Configuración de Nginx
+# 7. Configuración de Nginx + SSL
 echo "Configurando Nginx para el dominio urban-rentals.es..."
 cat > /etc/nginx/sites-available/urban-rentals.es <<EOF
 server {
@@ -143,6 +143,11 @@ rm -f /etc/nginx/sites-enabled/ruta-rentals.es || true
 # Verificar configuración y reiniciar Nginx
 nginx -t
 systemctl restart nginx
+
+# 7b. SSL con Let's Encrypt (certbot)
+echo "Instalando certbot y configurando SSL..."
+apt install -y certbot python3-certbot-nginx
+certbot --nginx -d urban-rentals.es -d www.urban-rentals.es --non-interactive --agree-tos -m admin@urban-rentals.es --redirect || echo "Certbot: SSL ya configurado o error temporal, continúa..."
 
 # 8. Seguridad: Firewall (UFW)
 echo "Configurando UFW..."

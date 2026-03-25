@@ -13,6 +13,8 @@ git pull origin main
 echo "=== [1.5/5] Asegurar variables de entorno ==="
 grep -q "OPENROUTER_API_KEY" .env 2>/dev/null || \
   echo 'OPENROUTER_API_KEY="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"' >> .env
+# Asegurar que NEXTAUTH_URL usa el dominio con HTTPS (no IP)
+sed -i 's|NEXTAUTH_URL=.*|NEXTAUTH_URL="https://urban-rentals.es"|' .env
 
 echo "=== [2/5] npm install ==="
 npm install --legacy-peer-deps
