@@ -3,7 +3,9 @@
 import { useState } from "react";
 import MaintenanceTab from "@/components/expenses/MaintenanceTab";
 import GeneralExpensesTab from "@/components/expenses/GeneralExpensesTab";
-import { Wrench, TrendingUp, Wallet, FileText, User, Users } from "lucide-react";
+import VehicleDocumentsTab from "@/components/expenses/VehicleDocumentsTab";
+import VehicleInsuranceTab from "@/components/expenses/VehicleInsuranceTab";
+import { Wrench, TrendingUp, Wallet, FileText, User, Users, FileCheck, ShieldCheck, ShieldAlert } from "lucide-react";
 import DriverPaymentsTab from "@/components/expenses/DriverPaymentsTab";
 import PayrollTab from "@/components/expenses/PayrollTab";
 import { useData } from "@/context/DataContext";
@@ -11,12 +13,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { formatCurrency } from "@/lib/utils";
 
 export default function ExpensesPage() {
-    const { expenses, maintenances } = useData();
-    const [activeTab, setActiveTab] = useState<"general" | "maintenance" | "drivers" | "payroll">("general");
+    const { expenses, maintenances, vehicleDocuments, vehicleInsurances } = useData();
+    const [activeTab, setActiveTab] = useState<"general" | "maintenance" | "drivers" | "payroll" | "documents" | "insurance">("general");
 
     const totalGeneralExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
     const totalMaintenanceCosts = maintenances.reduce((sum, maint) => sum + maint.cost, 0);
-    const totalExpenses = totalGeneralExpenses + totalMaintenanceCosts;
+    const totalDocsCosts = vehicleDocuments.filter(d => d.paymentStatus === "Pagado").reduce((sum, d) => sum + d.amount, 0);
+    const totalInsuranceCosts = vehicleInsurances.filter(i => i.paymentStatus === "Pagado").reduce((sum, i) => sum + i.amount, 0);
+    const totalDocsAndInsurance = totalDocsCosts + totalInsuranceCosts;
+    const totalExpenses = totalGeneralExpenses + totalMaintenanceCosts + totalDocsAndInsurance;
 
     return (
         <div className="space-y-8 w-full p-1">
@@ -28,7 +33,7 @@ export default function ExpensesPage() {
             </div>
 
             {/* Stats Dashboard */}
-            <div className="grid gap-6 md:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-4">
                 <Card className="border-border bg-card shadow-sm">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium text-muted-foreground">Gastos Totales (Global)</CardTitle>
@@ -59,6 +64,17 @@ export default function ExpensesPage() {
                     <CardContent>
                         <div className="text-3xl font-bold text-foreground">{formatCurrency(totalMaintenanceCosts)}</div>
                         <p className="text-xs text-muted-foreground mt-1">{maintenances.length} registros</p>
+                    </CardContent>
+                </Card>
+
+                <Card className="border-border bg-card shadow-sm">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Docs y Seguros</CardTitle>
+                        <ShieldAlert className="h-5 w-5 text-teal-600" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-bold text-foreground">{formatCurrency(totalDocsAndInsurance)}</div>
+                        <p className="text-xs text-muted-foreground mt-1">{vehicleDocuments.length + vehicleInsurances.length} registros pagados</p>
                     </CardContent>
                 </Card>
             </div>
@@ -125,6 +141,36 @@ export default function ExpensesPage() {
                         <span className="absolute bottom-0 left-0 w-full h-0.5 bg-green-600 rounded-t-full" />
                     )}
                 </button>
+                <button
+                    onClick={() => setActiveTab("documents")}
+                    className={`pb-3 px-2 text-sm font-medium transition-all relative ${activeTab === "documents"
+                        ? "text-purple-600"
+                        : "text-muted-foreground hover:text-foreground"
+                        }`}
+                >
+                    <div className="flex items-center gap-2 whitespace-nowrap">
+                        <FileCheck className="h-4 w-4" />
+                        Documentación
+                    </div>
+                    {activeTab === "documents" && (
+                        <span className="absolute bottom-0 left-0 w-full h-0.5 bg-purple-600 rounded-t-full" />
+                    )}
+                </button>
+                <button
+                    onClick={() => setActiveTab("insurance")}
+                    className={`pb-3 px-2 text-sm font-medium transition-all relative ${activeTab === "insurance"
+                        ? "text-teal-600"
+                        : "text-muted-foreground hover:text-foreground"
+                        }`}
+                >
+                    <div className="flex items-center gap-2 whitespace-nowrap">
+                        <ShieldCheck className="h-4 w-4" />
+                        Seguros
+                    </div>
+                    {activeTab === "insurance" && (
+                        <span className="absolute bottom-0 left-0 w-full h-0.5 bg-teal-600 rounded-t-full" />
+                    )}
+                </button>
             </div>
 
             {/* Tab Content */}
@@ -133,6 +179,8 @@ export default function ExpensesPage() {
                 {activeTab === "maintenance" && <MaintenanceTab />}
                 {activeTab === "drivers" && <DriverPaymentsTab />}
                 {activeTab === "payroll" && <PayrollTab />}
+                {activeTab === "documents" && <VehicleDocumentsTab />}
+                {activeTab === "insurance" && <VehicleInsuranceTab />}
             </div>
         </div>
     );

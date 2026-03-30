@@ -93,6 +93,23 @@ export async function POST(request: Request) {
                         data: { status: 'Pendiente' }
                     });
                 }
+
+                // Auto-create IVA record for rental invoice payments
+                if (invoice.rentalId) {
+                    const ivaAmount = Math.round(payment.amount * 15 / 115);
+                    const payDate = new Date(data.date);
+                    const period = `${payDate.getFullYear()}-${String(payDate.getMonth() + 1).padStart(2, '0')}`;
+                    await tx.ivaRecord.create({
+                        data: {
+                            invoiceId: data.invoiceId,
+                            amount: ivaAmount,
+                            baseAmount: payment.amount,
+                            paymentDate: payDate,
+                            period,
+                            status: 'Pendiente',
+                        }
+                    });
+                }
             }
 
             return payment;

@@ -7,7 +7,7 @@ import { formatCurrency, cn } from "@/lib/utils";
 import Link from "next/link";
 
 export default function DashboardPage() {
-    const { vehicles, clients, rentals, invoices, maintenances, expenses, accountsPayable, driverPayments, payrolls } = useData();
+    const { vehicles, clients, rentals, invoices, maintenances, expenses, accountsPayable, driverPayments, payrolls, vehicleDocuments, vehicleInsurances, ivaRecords } = useData();
 
     // --- Financials ---
     const totalIncome = invoices.reduce((sum, inv) => sum + inv.paidAmount, 0);
@@ -15,9 +15,12 @@ export default function DashboardPage() {
     const totalMaintenanceCosts = maintenances.reduce((sum, maint) => sum + maint.cost, 0);
     const totalDriverPayments = driverPayments.reduce((sum, dp) => sum + dp.amount, 0);
     const totalPayroll = payrolls.reduce((sum, p) => sum + p.totalAmount, 0);
+    const totalDocsCosts = vehicleDocuments.filter(d => d.paymentStatus === "Pagado").reduce((sum, d) => sum + d.amount, 0);
+    const totalInsuranceCosts = vehicleInsurances.filter(i => i.paymentStatus === "Pagado").reduce((sum, i) => sum + i.amount, 0);
 
-    const totalExpenses = totalGeneralExpenses + totalMaintenanceCosts + totalDriverPayments + totalPayroll;
-    const totalPayables = accountsPayable.reduce((sum, ap) => (ap.status === "Pendiente" || ap.status === "Retenido") ? sum + ap.amount : sum, 0);
+    const totalExpenses = totalGeneralExpenses + totalMaintenanceCosts + totalDriverPayments + totalPayroll + totalDocsCosts + totalInsuranceCosts;
+    const pendingIva = (ivaRecords || []).filter(r => r.status === "Pendiente").reduce((sum, r) => sum + r.amount, 0);
+    const totalPayables = accountsPayable.reduce((sum, ap) => (ap.status === "Pendiente" || ap.status === "Retenido") ? sum + ap.amount : sum, 0) + pendingIva;
     const utilities = totalIncome - totalExpenses - totalPayables;
 
     // --- Fleet ---

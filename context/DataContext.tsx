@@ -154,6 +154,50 @@ export interface Maintenance {
     type?: string;
 }
 
+export interface IvaRecord {
+    id: string;
+    invoiceId: string;
+    amount: number;
+    baseAmount: number;
+    paymentDate: string;
+    period: string; // "YYYY-MM"
+    status: "Pendiente" | "Pagado";
+    invoice?: { invoiceNumber: string; clientId: string };
+}
+
+export interface VehicleDocument {
+    id: string;
+    vehicleId: string;
+    categoryId?: string;
+    documentType: string; // "Permiso de Circulación" | "Revisión Técnica" | "SOAT" | "Seguro CIMA" | "Otro"
+    description: string;
+    amount: number;
+    issueDate: string;
+    expiryDate: string;
+    status: string; // "Vigente" | "Próximo a Vencer" | "Vencido"
+    paymentStatus: "Pagado" | "Pendiente";
+    notes?: string;
+    vehicle?: Vehicle;
+    category?: ExpenseCategory;
+}
+
+export interface VehicleInsurance {
+    id: string;
+    vehicleId: string;
+    categoryId?: string;
+    insurer: string;
+    policyNumber: string;
+    coverageType: string;
+    amount: number;
+    startDate: string;
+    expiryDate: string;
+    status: string; // "Vigente" | "Próximo a Vencer" | "Vencido"
+    paymentStatus: "Pagado" | "Pendiente";
+    notes?: string;
+    vehicle?: Vehicle;
+    category?: ExpenseCategory;
+}
+
 export interface CompanySettings {
     name: string;
     logo: string;
@@ -249,6 +293,9 @@ interface DataContextType {
     personnel: Personnel[];
     driverPayments: DriverPayment[];
     payrolls: Payroll[];
+    vehicleDocuments: VehicleDocument[];
+    vehicleInsurances: VehicleInsurance[];
+    ivaRecords: IvaRecord[];
     addVehicle: (vehicle: Omit<Vehicle, "id">) => void;
     updateVehicle: (id: string, updates: Partial<Vehicle>) => void;
     deleteVehicle: (id: string) => void;
@@ -297,6 +344,14 @@ interface DataContextType {
     addPayroll: (payroll: Omit<Payroll, "id">) => void;
     updatePayroll: (id: string, updates: Partial<Payroll>) => void;
     deletePayroll: (id: string) => void;
+    addVehicleDocument: (doc: Omit<VehicleDocument, "id" | "status" | "vehicle" | "category">) => Promise<void>;
+    updateVehicleDocument: (id: string, updates: Partial<VehicleDocument>) => Promise<void>;
+    deleteVehicleDocument: (id: string) => Promise<void>;
+    addVehicleInsurance: (ins: Omit<VehicleInsurance, "id" | "status" | "vehicle" | "category">) => Promise<void>;
+    updateVehicleInsurance: (id: string, updates: Partial<VehicleInsurance>) => Promise<void>;
+    deleteVehicleInsurance: (id: string) => Promise<void>;
+    updateIvaRecord: (id: string, updates: Partial<IvaRecord>) => Promise<void>;
+    deleteIvaRecord: (id: string) => Promise<void>;
     currentUser: User | null;
     login: (email: string) => boolean;
     logout: () => void;
@@ -336,6 +391,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const [personnel, setPersonnel] = useState<Personnel[]>([]);
     const [driverPayments, setDriverPayments] = useState<DriverPayment[]>([]);
     const [payrolls, setPayrolls] = useState<Payroll[]>([]);
+    const [vehicleDocuments, setVehicleDocuments] = useState<VehicleDocument[]>([]);
+    const [vehicleInsurances, setVehicleInsurances] = useState<VehicleInsurance[]>([]);
+    const [ivaRecords, setIvaRecords] = useState<IvaRecord[]>([]);
 
     const { data: session, status } = useSession();
     const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -345,7 +403,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setIsLoading(true);
         try {
             const [
-                v, c, r, i, m, s, u, p, ref, exp, expCat, own, agt, ap, per, dp, pay
+                v, c, r, i, m, s, u, p, ref, exp, expCat, own, agt, ap, per, dp, pay, vd, vi, iva
             ] = await Promise.all([
                 fetch('/api/vehicles').then(res => res.json()),
                 fetch('/api/clients').then(res => res.json()),
@@ -363,7 +421,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
                 fetch('/api/accounts-payable').then(res => res.json()),
                 fetch('/api/personnel').then(res => res.json()),
                 fetch('/api/driver-payments').then(res => res.json()),
-                fetch('/api/payroll').then(res => res.json())
+                fetch('/api/payroll').then(res => res.json()),
+                fetch('/api/vehicle-documents').then(res => res.json()),
+                fetch('/api/vehicle-insurance').then(res => res.json()),
+                fetch('/api/iva').then(res => res.json()),
             ]);
 
             setVehicles(v);
@@ -383,6 +444,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
             setPersonnel(per);
             setDriverPayments(dp);
             setPayrolls(pay);
+            setVehicleDocuments(Array.isArray(vd) ? vd : []);
+            setVehicleInsurances(Array.isArray(vi) ? vi : []);
+            setIvaRecords(Array.isArray(iva) ? iva : []);
 
 
 
@@ -556,6 +620,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setInvoices(i);
         setPayments(p);
         setAccountsPayable(ap);
+        // Refresh IVA records (auto-created server-side on each payment)
+        const ivaRes = await fetch('/api/iva').then(r => r.json());
+        setIvaRecords(Array.isArray(ivaRes) ? ivaRes : []);
 
         return receiptId;
     };
@@ -736,6 +803,41 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setPayrolls(prev => prev.filter(p => p.id !== id));
     };
 
+    const addVehicleDocument = async (doc: Omit<VehicleDocument, "id" | "status" | "vehicle" | "category">) => {
+        const res = await apiCall('/api/vehicle-documents', 'POST', doc);
+        setVehicleDocuments(prev => [res, ...prev]);
+    };
+    const updateVehicleDocument = async (id: string, updates: Partial<VehicleDocument>) => {
+        const res = await apiCall('/api/vehicle-documents', 'PUT', { id, ...updates });
+        setVehicleDocuments(prev => prev.map(d => d.id === id ? res : d));
+    };
+    const deleteVehicleDocument = async (id: string) => {
+        await apiCall(`/api/vehicle-documents?id=${id}`, 'DELETE');
+        setVehicleDocuments(prev => prev.filter(d => d.id !== id));
+    };
+
+    const addVehicleInsurance = async (ins: Omit<VehicleInsurance, "id" | "status" | "vehicle" | "category">) => {
+        const res = await apiCall('/api/vehicle-insurance', 'POST', ins);
+        setVehicleInsurances(prev => [res, ...prev]);
+    };
+    const updateVehicleInsurance = async (id: string, updates: Partial<VehicleInsurance>) => {
+        const res = await apiCall('/api/vehicle-insurance', 'PUT', { id, ...updates });
+        setVehicleInsurances(prev => prev.map(ins => ins.id === id ? res : ins));
+    };
+    const deleteVehicleInsurance = async (id: string) => {
+        await apiCall(`/api/vehicle-insurance?id=${id}`, 'DELETE');
+        setVehicleInsurances(prev => prev.filter(ins => ins.id !== id));
+    };
+
+    const updateIvaRecord = async (id: string, updates: Partial<IvaRecord>) => {
+        const res = await apiCall('/api/iva', 'PUT', { id, ...updates });
+        setIvaRecords(prev => prev.map(r => r.id === id ? res : r));
+    };
+    const deleteIvaRecord = async (id: string) => {
+        await apiCall(`/api/iva?id=${id}`, 'DELETE');
+        setIvaRecords(prev => prev.filter(r => r.id !== id));
+    };
+
     // Auth Methods
     const login = (email: string) => {
         // Now handled by next-auth on the login page
@@ -831,6 +933,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
                 addDriverPayment,
                 deleteDriverPayment,
                 addPayroll,
+                vehicleDocuments,
+                vehicleInsurances,
+                ivaRecords,
+                addVehicleDocument,
+                updateVehicleDocument,
+                deleteVehicleDocument,
+                addVehicleInsurance,
+                updateVehicleInsurance,
+                deleteVehicleInsurance,
+                updateIvaRecord,
+                deleteIvaRecord,
                 currentUser,
                 login,
                 logout,

@@ -26,8 +26,10 @@ model Vehicle {
   ownerName String?
   ownerDni  String?
 
-  rentals      Rental[]
-  maintenances Maintenance[]
+  rentals           Rental[]
+  maintenances      Maintenance[]
+  vehicleDocuments  VehicleDocument[]
+  vehicleInsurances VehicleInsurance[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   bookingRequests BookingRequest[]
@@ -81,10 +83,11 @@ model Invoice {
 
   rental   Rental? @relation(fields: [rentalId], references: [id], onDelete: SetNull)
   client   Client  @relation(fields: [clientId], references: [id])
-  payments Payment[]
-  refunds  Refund[]
-  expenses Expense[]
-  
+  payments   Payment[]
+  refunds    Refund[]
+  expenses   Expense[]
+  ivaRecords IvaRecord[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -160,7 +163,9 @@ model ExpenseCategory {
   name        String
   description String?
   type        String   @default("Gasto") // "Gasto" | "Ingreso"
-  expenses    Expense[]
+  expenses          Expense[]
+  vehicleDocuments  VehicleDocument[]
+  vehicleInsurances VehicleInsurance[]
 }
 
 model Expense {
@@ -284,4 +289,54 @@ model ContactMessage {
   status    String   @default("Pendiente") // "Pendiente" | "Atendido"
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model IvaRecord {
+  id          String   @id @default(uuid())
+  invoiceId   String
+  amount      Int      // IVA amount = paidAmount * 15/115
+  baseAmount  Int      // The paid amount that generated this IVA
+  paymentDate DateTime
+  period      String   // "YYYY-MM"
+  status      String   @default("Pendiente") // "Pendiente" | "Pagado"
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model VehicleDocument {
+  id            String   @id @default(uuid())
+  vehicleId     String
+  categoryId    String?
+  documentType  String   // "Permiso de Circulación" | "Revisión Técnica" | "SOAT" | "Seguro CIMA" | "Otro"
+  description   String
+  amount        Int
+  issueDate     DateTime
+  expiryDate    DateTime
+  status        String   // "Vigente" | "Próximo a Vencer" | "Vencido"
+  paymentStatus String   @default("Pagado") // "Pagado" | "Pendiente"
+  notes         String?
+  vehicle       Vehicle          @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  category      ExpenseCategory? @relation(fields: [categoryId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model VehicleInsurance {
+  id            String   @id @default(uuid())
+  vehicleId     String
+  categoryId    String?
+  insurer       String
+  policyNumber  String
+  coverageType  String
+  amount        Int
+  startDate     DateTime
+  expiryDate    DateTime
+  status        String   // "Vigente" | "Próximo a Vencer" | "Vencido"
+  paymentStatus String   @default("Pagado") // "Pagado" | "Pendiente"
+  notes         String?
+  vehicle       Vehicle          @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  category      ExpenseCategory? @relation(fields: [categoryId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }

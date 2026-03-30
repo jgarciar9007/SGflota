@@ -6,7 +6,13 @@
       "Bash(pip3 install:*)",
       "Bash(python3 -c \"import fabric; print\\(''ok''\\)\")",
       "Bash(python3 -c \":*)",
-      "Bash(py -3 -c \":*)"
+      "Bash(py -3 -c \":*)",
+      "Bash(sshpass -p 'Herve.2026GE' ssh -o StrictHostKeyChecking=no root@187.77.163.74 \"cd /var/www/SGflota && bash update_sgflota.sh\")",
+      "Bash(python3 -c \"import paramiko; print\\(''ok''\\)\")",
+      "Bash(python -c \"import paramiko; print\\(''ok''\\)\")",
+      "Bash(python -c \":*)",
+      "Bash(npx tsc:*)",
+      "Bash(node -e \":*)"
     ]
   }
 }

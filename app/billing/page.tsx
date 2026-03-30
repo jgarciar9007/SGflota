@@ -5,7 +5,7 @@ import { useData } from "@/context/DataContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { DollarSign, Calendar, User, CheckCircle, Plus, X, Printer, CreditCard, FileText, Loader2, Edit, Trash2 } from "lucide-react";
+import { DollarSign, Calendar, User, CheckCircle, Plus, X, Printer, CreditCard, FileText, Loader2, Edit, Trash2, Percent } from "lucide-react";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
 
@@ -13,8 +13,8 @@ import { generateDocumentHtml } from "@/lib/reportUtils";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 
 export default function BillingPage() {
-    const { invoices, clients, rentals, vehicles, companySettings, addInvoice, updateInvoice, deleteInvoice, addPayment, updatePayment, deletePayment, payments, refunds, updateRefund, deleteRefund, accountsPayable, updateAccountPayable, deleteAccountPayable, expenseCategories, currentUser, canEdit, canDelete } = useData();
-    const [activeTab, setActiveTab] = useState<"invoices" | "history" | "refunds" | "payables">("invoices");
+    const { invoices, clients, rentals, vehicles, companySettings, addInvoice, updateInvoice, deleteInvoice, addPayment, updatePayment, deletePayment, payments, refunds, updateRefund, deleteRefund, accountsPayable, updateAccountPayable, deleteAccountPayable, expenseCategories, currentUser, canEdit, canDelete, ivaRecords, updateIvaRecord, deleteIvaRecord } = useData();
+    const [activeTab, setActiveTab] = useState<"invoices" | "history" | "refunds" | "payables" | "iva">("invoices");
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [invoiceToEdit, setInvoiceToEdit] = useState<any>(null);
@@ -545,7 +545,8 @@ export default function BillingPage() {
 
     const paidAmount = invoices.reduce((sum, inv) => sum + inv.paidAmount, 0);
 
-    const totalPayable = accountsPayable.reduce((sum, ap) => (ap.status === "Pendiente" || ap.status === "Retenido") ? sum + ap.amount : sum, 0);
+    const pendingIva = (ivaRecords || []).filter(r => r.status === "Pendiente").reduce((sum, r) => sum + r.amount, 0);
+    const totalPayable = accountsPayable.reduce((sum, ap) => (ap.status === "Pendiente" || ap.status === "Retenido") ? sum + ap.amount : sum, 0) + pendingIva;
 
     // Group payments by receiptId
     const uniqueReceipts = Array.from(new Set(payments.map(p => p.receiptId))).map(receiptId => {
@@ -623,7 +624,7 @@ export default function BillingPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold text-foreground">{formatCurrency(totalPayable)}</div>
-                        <p className="text-xs text-muted-foreground mt-1">{accountsPayable.filter(ap => ap.status === "Pendiente" || ap.status === "Retenido").length} pendientes</p>
+                        <p className="text-xs text-muted-foreground mt-1">{accountsPayable.filter(ap => ap.status === "Pendiente" || ap.status === "Retenido").length} CxP + IVA pendiente</p>
                     </CardContent>
                 </Card>
             </div>
@@ -653,6 +654,12 @@ export default function BillingPage() {
                     className={`pb-2 px-4 text-sm font-medium transition-colors ${activeTab === "payables" ? "text-blue-600 border-b-2 border-blue-600" : "text-muted-foreground hover:text-foreground"}`}
                 >
                     Cuentas por Pagar
+                </button>
+                <button
+                    onClick={() => setActiveTab("iva")}
+                    className={`pb-2 px-4 text-sm font-medium transition-colors ${activeTab === "iva" ? "text-orange-600 border-b-2 border-orange-600" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                    IVA
                 </button>
             </div>
 
@@ -1216,6 +1223,141 @@ export default function BillingPage() {
                     </div>
                 )
             }
+
+            {activeTab === "iva" && (
+                <div>
+                    {/* IVA Summary */}
+                    <div className="grid gap-4 md:grid-cols-3 mb-6">
+                        <Card className="border-border bg-card">
+                            <CardContent className="p-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-orange-50 rounded-lg">
+                                        <Percent className="h-5 w-5 text-orange-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">IVA Pendiente</p>
+                                        <p className="text-xl font-bold text-foreground">{formatCurrency(pendingIva)}</p>
+                                        <p className="text-xs text-muted-foreground">{(ivaRecords || []).filter(r => r.status === "Pendiente").length} registro(s)</p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                        <Card className="border-border bg-card">
+                            <CardContent className="p-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-green-50 rounded-lg">
+                                        <CheckCircle className="h-5 w-5 text-green-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">IVA Pagado</p>
+                                        <p className="text-xl font-bold text-foreground">{formatCurrency((ivaRecords || []).filter(r => r.status === "Pagado").reduce((s, r) => s + r.amount, 0))}</p>
+                                        <p className="text-xs text-muted-foreground">{(ivaRecords || []).filter(r => r.status === "Pagado").length} registro(s)</p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                        <Card className="border-border bg-card">
+                            <CardContent className="p-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-blue-50 rounded-lg">
+                                        <DollarSign className="h-5 w-5 text-blue-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">IVA Total Acumulado</p>
+                                        <p className="text-xl font-bold text-foreground">{formatCurrency((ivaRecords || []).reduce((s, r) => s + r.amount, 0))}</p>
+                                        <p className="text-xs text-muted-foreground">{(ivaRecords || []).length} registro(s) totales</p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    <h3 className="text-xl font-bold text-foreground mb-4">Registros de IVA (15%)</h3>
+                    <div className="space-y-3">
+                        {(ivaRecords || []).length > 0 ? (ivaRecords || []).map((record) => {
+                            const invoice = invoices.find(inv => inv.id === record.invoiceId);
+                            const client = invoice ? clients.find(c => c.id === invoice.clientId) : null;
+                            return (
+                                <Card key={record.id} className="border-border bg-card hover:bg-accent/50 transition-colors">
+                                    <CardContent className="p-4">
+                                        <div className="flex items-center justify-between gap-4">
+                                            <div className="flex-1 grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
+                                                <div>
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <Percent className="h-4 w-4 text-orange-600" />
+                                                        <span className="text-foreground font-medium text-sm">{invoice?.invoiceNumber || `#${record.invoiceId.slice(0, 8)}`}</span>
+                                                    </div>
+                                                    <p className="text-xs text-muted-foreground">{client?.name || "Cliente"}</p>
+                                                </div>
+                                                <div className="text-sm text-muted-foreground">
+                                                    <p className="font-medium">Período</p>
+                                                    <p>{record.period}</p>
+                                                </div>
+                                                <div className="text-sm">
+                                                    <p className="text-muted-foreground">Base</p>
+                                                    <p className="font-medium text-foreground">{formatCurrency(record.baseAmount)}</p>
+                                                </div>
+                                                <div className="text-sm">
+                                                    <p className="text-muted-foreground">IVA (15%)</p>
+                                                    <p className="font-bold text-orange-600">{formatCurrency(record.amount)}</p>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                                                    <span className="text-xs text-muted-foreground">{new Date(record.paymentDate).toLocaleDateString()}</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2 shrink-0">
+                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${record.status === "Pagado" ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}>
+                                                    {record.status}
+                                                </span>
+                                                {record.status === "Pendiente" && canEdit(currentUser) && (
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={async () => {
+                                                            await updateIvaRecord(record.id, { status: "Pagado" });
+                                                            toast.success("IVA marcado como pagado");
+                                                        }}
+                                                        className="bg-green-600 hover:bg-green-700 text-white text-xs"
+                                                    >
+                                                        <CheckCircle className="h-3 w-3 mr-1" /> Marcar Pagado
+                                                    </Button>
+                                                )}
+                                                {canDelete(currentUser) && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                                        onClick={() => setConfirmModal({
+                                                            isOpen: true,
+                                                            title: "Eliminar Registro IVA",
+                                                            description: "¿Estás seguro de que deseas eliminar este registro de IVA?",
+                                                            confirmText: "Eliminar",
+                                                            variant: "danger",
+                                                            onConfirm: async () => {
+                                                                await deleteIvaRecord(record.id);
+                                                                toast.success("Registro IVA eliminado");
+                                                            }
+                                                        })}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            );
+                        }) : (
+                            <Card className="border-border bg-card">
+                                <CardContent className="p-8 text-center text-muted-foreground">
+                                    <Percent className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                                    <p>No hay registros de IVA. Se generan automáticamente al registrar pagos de facturas de alquiler.</p>
+                                </CardContent>
+                            </Card>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {
                 showPaymentModal && (
