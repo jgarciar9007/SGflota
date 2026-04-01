@@ -143,6 +143,8 @@ export function PublicFleet({ vehicles }: { vehicles: any[] }) {
     });
     const [isContactSubmitting, setIsContactSubmitting] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [currentPage, setCurrentPage] = useState(0);
+    const PAGE_SIZE = 6;
 
     const handleBookClick = (vehicle: any) => {
         setSelectedVehicle(vehicle);
@@ -357,10 +359,33 @@ export function PublicFleet({ vehicles }: { vehicles: any[] }) {
                     viewport={{ once: true }}
                     className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
                 >
-                    {vehicles.map(vehicle => (
+                    {vehicles.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE).map(vehicle => (
                         <VehicleCard key={vehicle.id} vehicle={vehicle} handleBookClick={handleBookClick} itemVariants={itemVariants} />
                     ))}
                 </motion.div>
+
+                {/* Pagination */}
+                {vehicles.length > 0 && (
+                    <div className="flex items-center justify-center gap-4 mt-12">
+                        <button
+                            onClick={() => { setCurrentPage(p => p - 1); document.getElementById('fleet')?.scrollIntoView({ behavior: 'smooth' }); }}
+                            disabled={currentPage === 0}
+                            className="flex items-center gap-2 px-6 py-3 rounded-full bg-white border border-slate-200 text-slate-700 font-semibold shadow-sm hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                        >
+                            <ChevronLeft size={18} /> Anterior
+                        </button>
+                        <span className="text-sm text-slate-500 font-medium">
+                            Página {currentPage + 1} de {Math.ceil(vehicles.length / PAGE_SIZE)}
+                        </span>
+                        <button
+                            onClick={() => { setCurrentPage(p => p + 1); document.getElementById('fleet')?.scrollIntoView({ behavior: 'smooth' }); }}
+                            disabled={(currentPage + 1) * PAGE_SIZE >= vehicles.length}
+                            className="flex items-center gap-2 px-6 py-3 rounded-full bg-slate-900 text-white font-semibold shadow-sm hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                        >
+                            Siguiente <ChevronRight size={18} />
+                        </button>
+                    </div>
+                )}
 
                 {vehicles.length === 0 && (
                     <div className="text-center py-24 bg-white rounded-3xl border border-dashed border-slate-200">

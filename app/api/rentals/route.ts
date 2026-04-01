@@ -55,7 +55,7 @@ export async function POST(request: Request) {
             // Calculate duration and total explicitly
             const start = new Date(data.startDate);
             const end = new Date(data.endDate);
-            const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) || 1;
+            const days = (Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) || 0) + 1;
             const totalAmount = data.dailyRate * days;
 
             const createdRental = await tx.rental.create({

@@ -233,7 +233,7 @@ export default function BillingPage() {
             await addInvoice({
                 clientId: formData.clientId,
                 rentalId: null as unknown as string, // Force null to handle optional relation correctly
-                amount: Math.round(totalAmount * 1.15), // Apply 15% VAT (IVA)
+                amount: Math.round(totalAmount), // Price already includes IVA
                 date: new Date(formData.date).toISOString(), // Use selected date
                 rentalDetails: {
                     items: formData.items
@@ -286,7 +286,7 @@ export default function BillingPage() {
         try {
             await updateInvoice(invoiceToEdit.id, {
                 date: new Date(invoiceToEdit.date).toISOString(),
-                amount: Math.round(totalAmount * 1.15),
+                amount: Math.round(totalAmount), // Price already includes IVA
                 rentalDetails: { items: invoiceToEdit.items }
             });
             toast.success("Factura actualizada correctamente");
@@ -419,7 +419,7 @@ export default function BillingPage() {
                     ${rental && vehicle ? `
                     <tr>
                         <td><strong>Renta: ${vehicle.name}</strong><br><span style="font-size: 12px; color: #6b7280;">${new Date(rental.startDate).toLocaleDateString()} - ${rental.endDate ? new Date(rental.endDate).toLocaleDateString() : '...'}</span></td>
-                        <td style="text-align: right;">${rental.endDate ? Math.ceil((new Date(rental.endDate).getTime() - new Date(rental.startDate).getTime()) / (1000 * 60 * 60 * 24)) : 1}</td>
+                        <td style="text-align: right;">${rental.endDate ? Math.ceil((new Date(rental.endDate).getTime() - new Date(rental.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1 : 1}</td>
                         <td style="text-align: right;">${formatCurrency(rental.dailyRate)}</td>
                         <td style="text-align: right;">${formatCurrency(invoice.amount)}</td>
                     </tr>

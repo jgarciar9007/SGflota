@@ -533,13 +533,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
         // Given complexity, I kept API simple CRUD. I need to call other APIs here.
         if (rental.vehicleId && res.id) {
             // Logic for Invoice creation
-            const days = Math.ceil((new Date(rental.endDate).getTime() - new Date(rental.startDate).getTime()) / (86400000));
+            const days = Math.ceil((new Date(rental.endDate).getTime() - new Date(rental.startDate).getTime()) / (86400000)) + 1;
             const totalAmount = Math.max(1, days) * rental.dailyRate;
 
             await addInvoice({
                 rentalId: res.id,
                 clientId: rental.clientId,
-                amount: Math.round(totalAmount * 1.15), // Apply 15% VAT (IVA)
+                amount: Math.round(totalAmount), // Price already includes IVA
                 rentalDetails: { startDate: rental.startDate, endDate: rental.endDate, days }
             });
 

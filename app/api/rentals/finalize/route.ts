@@ -32,8 +32,8 @@ export async function POST(request: Request) {
         const start = new Date(rental.startDate);
         // Calculate days difference
         const diffTime = actualEnd.getTime() - start.getTime();
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        // Ensure at least 1 day charged if less than 24h but started
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        // Ensure at least 1 day charged if same day
         const actualDays = diffDays < 1 ? 1 : diffDays;
 
         const dailyRate = rental.dailyRate;
