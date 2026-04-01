@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urban Rentals &mdash; Guinea Ecuatorial</title>
+    <meta name="description" content="Alquiler de vehículos y propiedades en Guinea Ecuatorial.">
+    <style>
+        :root {
+            --blue: #2563eb;
+            --green: #059669;
+            --slate-900: #0f172a;
+            --slate-800: #1e293b;
+            --slate-400: #94a3b8;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            height: 100%; width: 100%;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            cursor: none;
+        }
+        @media (max-width: 700px) {
+            html, body { overflow: auto; height: auto; cursor: auto; }
+        }
+
+        /* CURSOR */
+        #cur-ring {
+            position: fixed; z-index: 9999; pointer-events: none;
+            width: 36px; height: 36px;
+            border: 2px solid rgba(255,255,255,0.6);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.25s, height 0.25s, border-color 0.25s, background 0.25s;
+            mix-blend-mode: difference;
+        }
+        #cur-dot {
+            position: fixed; z-index: 9999; pointer-events: none;
+            width: 6px; height: 6px;
+            background: #fff;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: transform 0.1s;
+            mix-blend-mode: difference;
+        }
+        body.hovering-autos #cur-ring { width: 64px; height: 64px; border-color: #60a5fa; }
+        body.hovering-btn #cur-ring { width: 20px; height: 20px; background: rgba(255,255,255,0.15); border-color: #fff; }
+
+        /* NAV */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+            height: 60px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 2.5rem;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%);
+        }
+        .brand {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 1.1rem; font-weight: 800;
+            letter-spacing: -0.5px; text-decoration: none; color: #fff;
+            opacity: 0; animation: fadeDown 0.6s 0.2s forwards;
+        }
+        .brand img {
+            height: 34px; width: 34px; border-radius: 50%;
+            background: #fff; padding: 2px; object-fit: contain;
+        }
+        .nav-contact {
+            opacity: 0; animation: fadeDown 0.6s 0.4s forwards;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff; cursor: pointer;
+            padding: 9px 22px; border-radius: 999px;
+            font-size: 0.83rem; font-weight: 600;
+            backdrop-filter: blur(8px);
+            transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+        .nav-contact:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+
+        /* SPLIT PANELS */
+        main {
+            display: flex;
+            width: 100%; height: 100%;
+            position: relative;
+        }
+        @media (max-width: 700px) {
+            main { flex-direction: column; height: auto; }
+        }
+
+        .panel {
+            position: relative;
+            flex: 1;
+            overflow: hidden;
+            display: flex; flex-direction: column; justify-content: flex-end;
+            transition: flex 0.7s cubic-bezier(0.4,0,0.2,1);
+        }
+        .panel:hover { flex: 1.18; }
+        .panel-casas { cursor: default; }
+
+        /* Parallax bg */
+        .panel-bg {
+            position: absolute; inset: -8%;
+            background-size: cover; background-position: center;
+            transition: transform 0.12s linear;
+            will-change: transform;
+        }
+        .panel-autos .panel-bg {
+            background-image: url('https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=1400&q=85&fit=crop');
+        }
+        .panel-casas .panel-bg {
+            background-image: url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1400&q=85&fit=crop');
+            filter: saturate(0.8);
+        }
+
+        .panel-overlay {
+            position: absolute; inset: 0;
+            transition: opacity 0.4s;
+        }
+        .panel-autos .panel-overlay {
+            background: linear-gradient(135deg, rgba(10,20,60,0.55) 0%, transparent 50%),
+                        linear-gradient(to top, rgba(5,15,40,0.95) 0%, rgba(5,15,40,0.4) 45%, transparent 100%);
+        }
+        .panel-casas .panel-overlay {
+            background: linear-gradient(135deg, rgba(5,30,20,0.6) 0%, transparent 50%),
+                        linear-gradient(to top, rgba(5,20,15,0.95) 0%, rgba(5,20,15,0.4) 45%, transparent 100%);
+        }
+
+        /* Divider glow */
+        .divider {
+            position: absolute; top: 0; bottom: 0; right: 0; width: 1px; z-index: 5;
+            background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.25) 40%, rgba(255,255,255,0.25) 60%, transparent);
+            box-shadow: 0 0 12px rgba(255,255,255,0.08);
+        }
+
+        /* CONTENT */
+        .panel-content {
+            position: relative; z-index: 3;
+            padding: 0 2.5rem 2.5rem;
+            transform: translateY(20px); opacity: 0;
+        }
+        .panel-autos .panel-content { animation: fadeUp 0.8s 0.5s cubic-bezier(0.2,0,0,1) forwards; }
+        .panel-casas .panel-content { animation: fadeUp 0.8s 0.7s cubic-bezier(0.2,0,0,1) forwards; }
+
+        .tag {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 0.62rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 2px;
+            padding: 5px 14px; border-radius: 999px;
+            margin-bottom: 1rem;
+        }
+        .panel-autos .tag { background: rgba(37,99,235,0.2); color: #93c5fd; border: 1px solid rgba(37,99,235,0.35); }
+        .panel-casas .tag  { background: rgba(5,150,105,0.2); color: #6ee7b7; border: 1px solid rgba(5,150,105,0.35); }
+
+        /* TOP HERO TEXT */
+        .panel-hero {
+            position: absolute; top: 0; left: 0; right: 0; z-index: 3;
+            padding: 4.5rem 2.5rem 3rem;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, transparent 100%);
+            opacity: 0; animation: fadeDown 0.9s 0.8s cubic-bezier(0.2,0,0,1) forwards;
+        }
+        .panel-hero-headline {
+            font-size: clamp(1.1rem, 2vw, 1.55rem);
+            font-weight: 900; letter-spacing: -0.5px; line-height: 1.2;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+        }
+        .panel-hero-sub {
+            font-size: 0.78rem; font-weight: 500;
+            color: rgba(255,255,255,0.6);
+            display: flex; flex-wrap: wrap; gap: 0 1rem;
+            letter-spacing: 0.3px;
+        }
+        .panel-hero-sub span { display: flex; align-items: center; gap: 5px; }
+        .panel-hero-sub span::before {
+            content: ''; width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0;
+        }
+        .panel-autos .panel-hero-sub span::before { background: #60a5fa; }
+        .panel-casas .panel-hero-sub span::before { background: #34d399; }
+
+        .panel-title {
+            font-size: clamp(2rem, 3.5vw, 3.2rem);
+            font-weight: 900; letter-spacing: -2px; line-height: 1.0;
+            margin-bottom: 0.8rem;
+        }
+        .panel-autos .panel-title span {
+            background: linear-gradient(90deg, #fff 0%, #93c5fd 60%, #818cf8 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            background-size: 200%;
+            animation: shimmer 4s linear infinite;
+        }
+        .panel-casas .panel-title span {
+            background: linear-gradient(90deg, #fff 0%, #6ee7b7 60%, #34d399 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .panel-desc {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.9rem; line-height: 1.65;
+            max-width: 340px; margin-bottom: 1.5rem;
+        }
+
+        .panel-stats {
+            display: flex; gap: 1.5rem; margin-bottom: 1.75rem;
+        }
+        .stat-item { text-align: left; }
+        .stat-num {
+            font-size: 1.4rem; font-weight: 900; letter-spacing: -1px;
+            display: block; line-height: 1;
+        }
+        .panel-autos .stat-num { color: #93c5fd; }
+        .panel-casas .stat-num { color: #6ee7b7; }
+        .stat-lbl { font-size: 0.65rem; font-weight: 600; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 1px; }
+
+        .cta-btn {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 13px 26px; border-radius: 12px;
+            font-size: 0.9rem; font-weight: 700;
+            text-decoration: none; border: none; cursor: pointer;
+            position: relative; overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .cta-btn::before {
+            content: ''; position: absolute; inset: 0;
+            background: rgba(255,255,255,0); transition: background 0.3s;
+        }
+        .cta-btn:hover::before { background: rgba(255,255,255,0.1); }
+        .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0,0,0,0.5); }
+        .panel-autos .cta-btn { background: #2563eb; color: #fff; box-shadow: 0 4px 20px rgba(37,99,235,0.4); }
+        .panel-casas .cta-btn { background: #1f2937; color: #9ca3af; cursor: default; }
+        .arrow {
+            display: inline-flex;
+            transition: transform 0.25s;
+        }
+        .cta-btn:hover .arrow { transform: translateX(4px); }
+
+        /* Coming soon overlay */
+        .badge-soon {
+            position: absolute; top: 72px; left: 50%; transform: translateX(-50%); z-index: 10;
+            background: rgba(15,23,42,0.85);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: #94a3b8; font-size: 0.65rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 2px;
+            padding: 6px 16px; border-radius: 999px;
+            backdrop-filter: blur(6px);
+            opacity: 0; animation: fadeDown 0.6s 1s forwards;
+        }
+        @media (max-width: 700px) {
+            .badge-soon { top: 1rem; left: auto; transform: none; right: 1rem; }
+        }
+
+        /* NOISE TEXTURE overlay (subtle) */
+        main::after {
+            content: ''; position: fixed; inset: 0; z-index: 1;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+            opacity: 0.4;
+        }
+
+        /* MODAL */
+        .modal-bg {
+            display: none; position: fixed; inset: 0; z-index: 200;
+            background: rgba(0,0,0,0.75); backdrop-filter: blur(8px);
+            align-items: center; justify-content: center; padding: 1rem;
+        }
+        .modal-bg.open { display: flex; }
+        .modal {
+            background: #1e293b; border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px; width: 100%; max-width: 460px; padding: 2rem;
+            position: relative;
+            animation: scaleIn 0.3s cubic-bezier(0.2,0,0,1);
+        }
+        .modal h3 { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.3rem; }
+        .modal .sub { color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.5rem; }
+        .modal-close {
+            position: absolute; top: 1rem; right: 1rem;
+            background: none; border: none; color: #64748b;
+            font-size: 1.1rem; cursor: pointer;
+            width: 30px; height: 30px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 6px; transition: background 0.2s, color 0.2s;
+        }
+        .modal-close:hover { background: rgba(255,255,255,0.08); color: #fff; }
+        .field { margin-bottom: 0.9rem; }
+        .field label { display: block; font-size: 0.78rem; font-weight: 600; color: #94a3b8; margin-bottom: 5px; }
+        .field input, .field textarea {
+            width: 100%; padding: 10px 14px;
+            background: #0f172a; border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px; color: #fff; font-size: 0.9rem;
+            font-family: inherit; transition: border-color 0.2s;
+        }
+        .field input:focus, .field textarea:focus { outline: none; border-color: #2563eb; }
+        .field textarea { resize: none; height: 88px; }
+        .modal-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+        .modal-footer { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.25rem; }
+        .btn-cancel {
+            background: none; border: 1px solid rgba(255,255,255,0.12);
+            color: #94a3b8; padding: 10px 18px; border-radius: 8px;
+            font-size: 0.875rem; cursor: pointer; transition: background 0.2s;
+        }
+        .btn-cancel:hover { background: rgba(255,255,255,0.05); }
+        .btn-send {
+            background: #2563eb; color: #fff; border: none;
+            padding: 10px 22px; border-radius: 8px;
+            font-size: 0.875rem; font-weight: 700; cursor: pointer;
+            transition: background 0.2s, transform 0.15s;
+        }
+        .btn-send:hover { background: #1d4ed8; transform: translateY(-1px); }
+        .btn-send:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+        /* TOAST */
+        .toast {
+            position: fixed; bottom: 2rem; left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: #065f46; color: #fff;
+            padding: 12px 24px; border-radius: 10px;
+            font-size: 0.875rem; font-weight: 600;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+            opacity: 0; transition: opacity 0.3s, transform 0.3s;
+            z-index: 300; pointer-events: none;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .toast.error { background: #7f1d1d; }
+
+        /* KEYFRAMES */
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+        @keyframes shimmer {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes pulse-line {
+            0%, 100% { opacity: 0.2; }
+            50%       { opacity: 0.6; }
+        }
+        .divider { animation: pulse-line 3s ease-in-out infinite; }
+
+        /* Mobile */
+        @media (max-width: 700px) {
+            .panel { min-height: 55vh; }
+            .panel:hover { flex: 1; }
+            .panel-title { font-size: 2rem; }
+            .panel-stats { gap: 1rem; }
+            .stat-num { font-size: 1.2rem; }
+            nav { padding: 0 1.25rem; }
+            .panel-content { padding: 0 1.5rem 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Custom cursor (hidden on mobile) -->
+<div id="cur-ring"></div>
+<div id="cur-dot"></div>
+
+<!-- NAV -->
+<nav>
+    <a href="/" class="brand">
+        <img src="https://autos.urban-rentals.es/logo.png" alt="Urban Rentals" onerror="this.style.display='none'">
+        Urban Rentals
+    </a>
+    <button class="nav-contact" onclick="openModal()">Contactar</button>
+</nav>
+
+<!-- SPLIT SCREEN -->
+<main>
+
+    <!-- AUTOS PANEL -->
+    <section class="panel panel-autos" onclick="window.location='https://autos.urban-rentals.es'">
+        <div class="panel-bg" id="bg-autos"></div>
+        <div class="panel-overlay"></div>
+        <div class="divider"></div>
+        <div class="panel-hero">
+            <p class="panel-hero-headline">Recorre Guinea Ecuatorial<br>sin l&#237;mites ni complicaciones</p>
+            <div class="panel-hero-sub">
+                <span>Reserva instant&#225;nea</span>
+                <span>Con o sin conductor</span>
+                <span>Asistencia 24/7</span>
+            </div>
+        </div>
+        <div class="panel-content">
+            <span class="tag">&#x2714;&#xFE0F; Disponible ahora</span>
+            <h2 class="panel-title"><span>Alquiler<br>de Autos</span></h2>
+            <p class="panel-desc">Flota moderna de SUV, pickups, sedanes y minibuses. Con o sin conductor, tarifas diarias flexibles en toda Guinea Ecuatorial.</p>
+            <div class="panel-stats">
+                <div class="stat-item">
+                    <span class="stat-num" data-count="6" data-suffix="">0</span>
+                    <span class="stat-lbl">Veh&#237;culos</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-num" data-count="24" data-suffix="h">0</span>
+                    <span class="stat-lbl">Disponibilidad</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-num" data-count="100" data-suffix="%">0</span>
+                    <span class="stat-lbl">Satisfacci&#243;n</span>
+                </div>
+            </div>
+            <a href="https://autos.urban-rentals.es" class="cta-btn" onclick="event.stopPropagation()">
+                Ver flota disponible
+                <span class="arrow">
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                </span>
+            </a>
+        </div>
+    </section>
+
+    <!-- CASAS PANEL — URL lista, solo quitar clase coming-soon cuando se lance -->
+    <section class="panel panel-casas" data-url="https://casas.urban-rentals.es">
+        <div class="panel-bg" id="bg-casas"></div>
+        <div class="panel-overlay"></div>
+        <span class="badge-soon">Pr&#243;ximamente</span>
+        <div class="panel-hero">
+            <p class="panel-hero-headline">Tu hogar ideal en<br>Guinea Ecuatorial te espera</p>
+            <div class="panel-hero-sub">
+                <span>Corto y largo plazo</span>
+                <span>Propiedades verificadas</span>
+                <span>Gesti&#243;n profesional</span>
+            </div>
+        </div>
+        <div class="panel-content">
+            <span class="tag">En desarrollo</span>
+            <h2 class="panel-title"><span>Alquiler<br>de Casas</span></h2>
+            <p class="panel-desc">Propiedades residenciales y corporativas para estancias cortas y largas en las principales ciudades del pa&#237;s.</p>
+            <div class="panel-stats">
+                <div class="stat-item">
+                    <span class="stat-num" style="color:#6ee7b7">&#8734;</span>
+                    <span class="stat-lbl">Propiedades</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-num" style="color:#6ee7b7">2025</span>
+                    <span class="stat-lbl">Lanzamiento</span>
+                </div>
+            </div>
+            <button class="cta-btn">
+                Pr&#243;ximamente
+            </button>
+        </div>
+    </section>
+
+</main>
+
+<!-- MODAL CONTACTO -->
+<div class="modal-bg" id="modalBg" onclick="handleBgClick(event)">
+    <div class="modal">
+        <button class="modal-close" onclick="closeModal()">&#x2715;</button>
+        <h3>Cont&#225;ctanos</h3>
+        <p class="sub">&#191;Tienes alguna duda? Escr&#237;benos y te respondemos en breve.</p>
+        <form id="contactForm" onsubmit="submitContact(event)">
+            <div class="modal-row">
+                <div class="field">
+                    <label>Nombre</label>
+                    <input type="text" id="c-name" placeholder="Juan P&#233;rez" required>
+                </div>
+                <div class="field">
+                    <label>Tel&#233;fono</label>
+                    <input type="tel" id="c-phone" placeholder="+240..." required>
+                </div>
+            </div>
+            <div class="field">
+                <label>Email</label>
+                <input type="email" id="c-email" placeholder="juan@ejemplo.com" required>
+            </div>
+            <div class="field">
+                <label>Mensaje</label>
+                <textarea id="c-msg" placeholder="&#191;En qu&#233; podemos ayudarte?" required></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeModal()">Cancelar</button>
+                <button type="submit" class="btn-send" id="sendBtn">Enviar mensaje</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+    /* ── CUSTOM CURSOR ── */
+    var ring = document.getElementById('cur-ring');
+    var dot  = document.getElementById('cur-dot');
+    var mx = window.innerWidth / 2, my = window.innerHeight / 2;
+    var rx = mx, ry = my;
+
+    document.addEventListener('mousemove', function (e) {
+        mx = e.clientX; my = e.clientY;
+        dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+    });
+
+    (function animateCursor() {
+        rx += (mx - rx) * 0.14;
+        ry += (my - ry) * 0.14;
+        ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+        requestAnimationFrame(animateCursor);
+    })();
+
+    document.querySelectorAll('a, button, .cta-btn').forEach(function (el) {
+        el.addEventListener('mouseenter', function () { document.body.classList.add('hovering-btn'); });
+        el.addEventListener('mouseleave', function () { document.body.classList.remove('hovering-btn'); });
+    });
+
+    /* ── PARALLAX BG ── */
+    var bgAutos = document.getElementById('bg-autos');
+    var bgCasas = document.getElementById('bg-casas');
+    var panelAutos = document.querySelector('.panel-autos');
+    var panelCasas = document.querySelector('.panel-casas');
+
+    document.addEventListener('mousemove', function (e) {
+        var cx = (e.clientX / window.innerWidth  - 0.5) * 2;
+        var cy = (e.clientY / window.innerHeight - 0.5) * 2;
+        bgAutos.style.transform = 'translate(' + (cx * -12) + 'px,' + (cy * -10) + 'px) scale(1.05)';
+        bgCasas.style.transform = 'translate(' + (cx *  12) + 'px,' + (cy * -10) + 'px) scale(1.05)';
+    });
+
+    /* ── 3D TILT ── */
+    function addTilt(panel, bg) {
+        panel.addEventListener('mousemove', function (e) {
+            var r = panel.getBoundingClientRect();
+            var x = (e.clientX - r.left) / r.width  - 0.5;
+            var y = (e.clientY - r.top)  / r.height - 0.5;
+            panel.style.transform = 'perspective(1200px) rotateY(' + (x * 4) + 'deg) rotateX(' + (-y * 3) + 'deg)';
+        });
+        panel.addEventListener('mouseleave', function () {
+            panel.style.transform = 'perspective(1200px) rotateY(0deg) rotateX(0deg)';
+        });
+    }
+    addTilt(panelAutos, bgAutos);
+    addTilt(panelCasas, bgCasas);
+
+    /* ── PANEL HOVER CURSOR ── */
+    panelAutos.addEventListener('mouseenter', function () { document.body.classList.add('hovering-autos'); });
+    panelAutos.addEventListener('mouseleave', function () { document.body.classList.remove('hovering-autos'); });
+
+    /* ── MAGNETIC BUTTONS ── */
+    document.querySelectorAll('.cta-btn, .nav-contact').forEach(function (btn) {
+        btn.addEventListener('mousemove', function (e) {
+            var r = btn.getBoundingClientRect();
+            var x = e.clientX - r.left - r.width  / 2;
+            var y = e.clientY - r.top  - r.height / 2;
+            btn.style.transform = 'translate(' + (x * 0.22) + 'px,' + (y * 0.28) + 'px) translateY(-2px)';
+        });
+        btn.addEventListener('mouseleave', function () {
+            btn.style.transform = '';
+        });
+    });
+
+    /* ── COUNT UP ── */
+    function countUp(el) {
+        var target = parseInt(el.dataset.count, 10);
+        var suffix = el.dataset.suffix || '';
+        var start  = 0;
+        var duration = 1200;
+        var startTime = null;
+        function step(ts) {
+            if (!startTime) startTime = ts;
+            var progress = Math.min((ts - startTime) / duration, 1);
+            var eased = 1 - Math.pow(1 - progress, 3);
+            el.textContent = Math.round(eased * target) + suffix;
+            if (progress < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+    }
+
+    var counted = false;
+    function tryCount() {
+        if (counted) return;
+        counted = true;
+        document.querySelectorAll('.stat-num[data-count]').forEach(function (el) {
+            countUp(el);
+        });
+    }
+    setTimeout(tryCount, 900);
+
+    /* ── GLITCH TEXT on panel hover ── */
+    var titleAutos = panelAutos.querySelector('.panel-title span');
+    var originalText = titleAutos ? titleAutos.innerHTML : '';
+    var glitching = false;
+
+    if (titleAutos) {
+        panelAutos.addEventListener('mouseenter', function () {
+            if (glitching) return;
+            glitching = true;
+            var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ01';
+            var iterations = 0;
+            var maxIter = 8;
+            var interval = setInterval(function () {
+                titleAutos.innerHTML = originalText
+                    .split('')
+                    .map(function (ch, i) {
+                        if (ch === '<' || ch === '>' || ch === 'b' || ch === 'r') return ch;
+                        if (Math.random() > 0.85 && iterations < maxIter / 2) {
+                            return chars[Math.floor(Math.random() * chars.length)];
+                        }
+                        return ch;
+                    })
+                    .join('');
+                iterations++;
+                if (iterations >= maxIter) {
+                    clearInterval(interval);
+                    titleAutos.innerHTML = originalText;
+                    glitching = false;
+                }
+            }, 45);
+        });
+    }
+
+    /* ── RIPPLE on click ── */
+    panelAutos.addEventListener('click', function (e) {
+        var ripple = document.createElement('span');
+        var r = panelAutos.getBoundingClientRect();
+        ripple.style.cssText = 'position:absolute;border-radius:50%;pointer-events:none;z-index:20;' +
+            'width:6px;height:6px;background:rgba(255,255,255,0.35);' +
+            'left:' + (e.clientX - r.left - 3) + 'px;top:' + (e.clientY - r.top - 3) + 'px;' +
+            'transform:scale(0);animation:rippleAnim 0.6s ease-out forwards;';
+        panelAutos.appendChild(ripple);
+        setTimeout(function () { ripple.remove(); }, 650);
+    });
+    var style = document.createElement('style');
+    style.textContent = '@keyframes rippleAnim{to{transform:scale(120);opacity:0}}';
+    document.head.appendChild(style);
+
+    /* ── MODAL ── */
+    window.openModal = function () { document.getElementById('modalBg').classList.add('open'); };
+    window.closeModal = function () { document.getElementById('modalBg').classList.remove('open'); };
+    window.handleBgClick = function (e) { if (e.target === document.getElementById('modalBg')) closeModal(); };
+
+    window.submitContact = async function (e) {
+        e.preventDefault();
+        var btn = document.getElementById('sendBtn');
+        btn.disabled = true; btn.textContent = 'Enviando...';
+        try {
+            var res = await fetch('https://autos.urban-rentals.es/api/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name:    document.getElementById('c-name').value,
+                    email:   document.getElementById('c-email').value,
+                    phone:   document.getElementById('c-phone').value,
+                    message: document.getElementById('c-msg').value
+                })
+            });
+            if (!res.ok) throw new Error();
+            showToast('\u2713 Mensaje enviado. Te contactaremos pronto.');
+            closeModal();
+            document.getElementById('contactForm').reset();
+        } catch (_) {
+            showToast('Error al enviar. Int\u00e9ntalo de nuevo.', true);
+        } finally {
+            btn.disabled = false; btn.textContent = 'Enviar mensaje';
+        }
+    };
+
+    function showToast(msg, isErr) {
+        var t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast show' + (isErr ? ' error' : '');
+        setTimeout(function () { t.className = 'toast'; }, 3500);
+    }
+
+    /* ── ESCAPE key closes modal ── */
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeModal();
+    });
+
+})();
+</script>
+</body>
+</html>
