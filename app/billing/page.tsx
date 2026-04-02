@@ -1336,6 +1336,7 @@ export default function BillingPage() {
                                                             onConfirm: async () => {
                                                                 await deleteIvaRecord(record.id);
                                                                 toast.success("Registro IVA eliminado");
+                                                                setConfirmModal(prev => ({ ...prev, isOpen: false }));
                                                             }
                                                         })}
                                                     >

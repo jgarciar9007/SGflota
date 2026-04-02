@@ -22,17 +22,15 @@ npm install --legacy-peer-deps
 echo "=== [3/5] Prisma generate ==="
 npx prisma generate
 
+echo "=== [3.5/5] Restaurar symlink uploads antes del build ==="
+mkdir -p /var/www/uploads/vehicles
+rm -rf public/uploads
+ln -sf /var/www/uploads public/uploads
+
 echo "=== [4/5] Build ==="
 npm run build
 
 echo "=== [5/5] Copiar assets y reiniciar ==="
-
-# Asegurar que el directorio persistente de uploads existe
-mkdir -p /var/www/uploads/vehicles
-
-# Restaurar symlink en public/uploads (se puede romper tras git pull o build)
-rm -rf public/uploads
-ln -sf /var/www/uploads public/uploads
 
 if [ -d ".next/standalone" ]; then
     # Copiar public EXCLUYENDO uploads (se gestiona como symlink a /var/www/uploads)

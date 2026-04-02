@@ -22,10 +22,10 @@ export default async function Home() {
   });
 
   // Map: add availableFrom for rented vehicles, sort Disponible first
-  const mapped = vehicles.map(v => ({
+  const mapped = vehicles.map(({ rentals, ...v }) => ({
     ...v,
-    availableFrom: v.status === 'Rentado' && v.rentals[0]?.endDate
-      ? v.rentals[0].endDate.toISOString()
+    availableFrom: v.status === 'Rentado' && rentals[0]?.endDate
+      ? rentals[0].endDate.toISOString()
       : null,
   })).sort((a, b) => {
     if (a.status === 'Disponible' && b.status !== 'Disponible') return -1;
