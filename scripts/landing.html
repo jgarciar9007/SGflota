@@ -102,7 +102,7 @@
             transition: flex 0.7s cubic-bezier(0.4,0,0.2,1);
         }
         .panel:hover { flex: 1.18; }
-        .panel-casas { cursor: default; }
+        .panel-casas { cursor: pointer; }
 
         /* Parallax bg */
         .panel-bg {
@@ -235,7 +235,7 @@
         .cta-btn:hover::before { background: rgba(255,255,255,0.1); }
         .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0,0,0,0.5); }
         .panel-autos .cta-btn { background: #2563eb; color: #fff; box-shadow: 0 4px 20px rgba(37,99,235,0.4); }
-        .panel-casas .cta-btn { background: #1f2937; color: #9ca3af; cursor: default; }
+        .panel-casas .cta-btn { background: #059669; color: #fff; box-shadow: 0 4px 20px rgba(5,150,105,0.4); }
         .arrow {
             display: inline-flex;
             transition: transform 0.25s;
@@ -428,7 +428,6 @@
     <section class="panel panel-casas" data-url="https://casas.urban-rentals.es">
         <div class="panel-bg" id="bg-casas"></div>
         <div class="panel-overlay"></div>
-        <span class="badge-soon">Pr&#243;ximamente</span>
         <div class="panel-hero">
             <p class="panel-hero-headline">Tu hogar ideal en<br>Guinea Ecuatorial te espera</p>
             <div class="panel-hero-sub">
@@ -438,7 +437,7 @@
             </div>
         </div>
         <div class="panel-content">
-            <span class="tag">En desarrollo</span>
+            <span class="tag">Disponible</span>
             <h2 class="panel-title"><span>Alquiler<br>de Casas</span></h2>
             <p class="panel-desc">Propiedades residenciales y corporativas para estancias cortas y largas en las principales ciudades del pa&#237;s.</p>
             <div class="panel-stats">
@@ -451,9 +450,9 @@
                     <span class="stat-lbl">Lanzamiento</span>
                 </div>
             </div>
-            <button class="cta-btn">
-                Pr&#243;ximamente
-            </button>
+            <a href="https://casas.urban-rentals.es" class="cta-btn" onclick="event.stopPropagation()">
+                Ver Casas <span class="arrow">&#8594;</span>
+            </a>
         </div>
     </section>
 
