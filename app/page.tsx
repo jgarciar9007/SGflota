@@ -10,7 +10,18 @@ export default async function Home() {
     where: {
       status: { in: ['Disponible', 'Rentado'] }
     },
-    include: {
+    select: {
+      id: true,
+      name: true,
+      type: true,
+      range: true,
+      price: true,
+      image: true,
+      images: true,
+      status: true,
+      plate: true,
+      year: true,
+      seats: true,
       rentals: {
         where: { status: 'Activo' },
         select: { endDate: true },
@@ -21,7 +32,6 @@ export default async function Home() {
     orderBy: { price: 'asc' }
   });
 
-  // Map: add availableFrom for rented vehicles, sort Disponible first
   const mapped = vehicles.map(({ rentals, ...v }) => ({
     ...v,
     availableFrom: v.status === 'Rentado' && rentals[0]?.endDate
