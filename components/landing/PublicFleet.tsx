@@ -14,6 +14,10 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 
 function VehicleCard({ vehicle, handleBookClick, itemVariants }: { vehicle: any, handleBookClick: (v: any) => void, itemVariants: any }) {
+    const isRented = vehicle.status === 'Rentado';
+    const availableFrom = vehicle.availableFrom
+        ? new Date(vehicle.availableFrom).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })
+        : null;
     const imagesFromVehicle = Array.isArray(vehicle.images) ? vehicle.images : (typeof vehicle.images === 'string' ? JSON.parse(vehicle.images || "[]") : []);
     const images = imagesFromVehicle.length > 0 ? imagesFromVehicle : (vehicle.image ? [vehicle.image] : []);
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -57,13 +61,20 @@ function VehicleCard({ vehicle, handleBookClick, itemVariants }: { vehicle: any,
             </div>
             <div className="relative h-56 bg-slate-100 overflow-hidden group/carousel">
                 {images.length > 0 ? (
-                    <img src={images[currentIndex]} alt={vehicle.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                    <img src={images[currentIndex]} alt={vehicle.name} className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ${isRented ? 'brightness-50' : ''}`} />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center text-slate-300">
                         <Car size={80} strokeWidth={1} />
                     </div>
                 )}
-                {/* Removed badge overlay */}
+                {isRented && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 pointer-events-none">
+                        <span className="text-white font-bold text-base uppercase tracking-wider">No disponible</span>
+                        {availableFrom && (
+                            <span className="text-white/80 text-xs font-medium">Libre el {availableFrom}</span>
+                        )}
+                    </div>
+                )}
 
                 {/* Carousel Controls */}
                 {images.length > 1 && (
@@ -110,9 +121,15 @@ function VehicleCard({ vehicle, handleBookClick, itemVariants }: { vehicle: any,
                 </div>
 
                 <div className="mt-auto">
-                    <Button className="w-full bg-slate-900 hover:bg-blue-600 text-white h-11 rounded-xl text-sm font-semibold shadow-md shadow-slate-100 transition-all duration-300" onClick={() => handleBookClick(vehicle)}>
-                        Reservar Ahora
-                    </Button>
+                    {isRented ? (
+                        <Button className="w-full bg-slate-200 text-slate-400 h-11 rounded-xl text-sm font-semibold cursor-not-allowed" disabled>
+                            {availableFrom ? `Disponible el ${availableFrom}` : 'No disponible'}
+                        </Button>
+                    ) : (
+                        <Button className="w-full bg-slate-900 hover:bg-blue-600 text-white h-11 rounded-xl text-sm font-semibold shadow-md shadow-slate-100 transition-all duration-300" onClick={() => handleBookClick(vehicle)}>
+                            Reservar Ahora
+                        </Button>
+                    )}
                 </div>
             </div>
         </motion.div>

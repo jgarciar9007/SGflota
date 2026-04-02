@@ -96,7 +96,7 @@ export async function POST(request: Request) {
 
                 // Auto-create IVA record for rental invoice payments
                 if (invoice.rentalId) {
-                    const ivaAmount = Math.round(payment.amount * 15 / 115);
+                    const ivaAmount = Math.round(payment.amount * 0.15);
                     const payDate = new Date(data.date);
                     const period = `${payDate.getFullYear()}-${String(payDate.getMonth() + 1).padStart(2, '0')}`;
                     await tx.ivaRecord.create({
