@@ -1,7 +1,13 @@
-
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+
+export const metadata: Metadata = {
+    title: "Política de Privacidad",
+    description: "Política de privacidad de Urban Rentals. Conoce cómo gestionamos tus datos personales en nuestro servicio de alquiler de vehículos y casas en Guinea Ecuatorial.",
+    robots: { index: false, follow: true },
+};
 
 export default function PrivacyPage() {
     return (

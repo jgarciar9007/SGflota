@@ -21,11 +21,11 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL("https://urban-rentals.es"),
   title: {
-    default: "Urban Rentals | Alquiler de Vehículos en Guinea Ecuatorial",
-    template: "%s | Urban Rentals"
+    default: "Urban Rentals | Alquiler de Vehículos y Casas en Guinea Ecuatorial",
+    template: "%s | Urban Rentals Guinea Ecuatorial"
   },
-  description: "La mejor agencia de alquiler de autos en Guinea Ecuatorial. Ofrecemos vehículos modernos, seguros y confortables para renta en Malabo, Bata y a nivel nacional. Reserva tu coche hoy.",
-  keywords: "alquiler de autos, guinea ecuatorial, renta de vehiculos, alquiler de coches malabo, renta de autos bata, urban rentals, rent a car guinea ecuatorial, coches familiares, SUV 4x4",
+  description: "Alquiler de vehículos y casas en Guinea Ecuatorial. Coches, SUV y 4x4 en Malabo y Bata. Propiedades residenciales y corporativas. ¡Reserva hoy con Urban Rentals!",
+  keywords: "alquiler de coches Guinea Ecuatorial, alquiler de vehículos Malabo, rent a car Guinea Ecuatorial, renta de autos Malabo, alquiler de autos Bata, coches de alquiler Guinea Ecuatorial, SUV 4x4 Guinea Ecuatorial, alquiler con conductor Malabo, alquiler de casas Guinea Ecuatorial, casas en alquiler Malabo, alquiler de pisos Malabo, alquiler de apartamentos Bata, alquiler de villas Guinea Ecuatorial, alquiler de propiedades Guinea Ecuatorial, agencia inmobiliaria Malabo, alquiler mensual Guinea Ecuatorial, alquiler temporal Malabo, Urban Rentals, rent a car Malabo, car rental Equatorial Guinea, house rental Equatorial Guinea, vehicle rental Malabo, location voiture Guinée Équatoriale, location maison Guinée Équatoriale, alquiler inmuebles Guinea Ecuatorial",
   authors: [{ name: "Urban Rentals" }],
   creator: "Urban Rentals",
   publisher: "Urban Rentals",
@@ -33,16 +33,16 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: "Urban Rentals | Alquiler de Vehículos en Guinea Ecuatorial",
-    description: "Encuentra el vehículo perfecto para tu viaje o negocio. Renta de autos seguros y modernos en Guinea Ecuatorial.",
+    title: "Urban Rentals | Alquiler de Vehículos y Casas en Guinea Ecuatorial",
+    description: "Alquiler de vehículos y casas en Guinea Ecuatorial. Coches, SUV y 4x4 en Malabo y Bata. Propiedades residenciales y corporativas. ¡Reserva hoy!",
     url: "https://urban-rentals.es",
     siteName: "Urban Rentals",
     images: [
       {
-        url: "/logo.png",
-        width: 800,
-        height: 600,
-        alt: "Urban Rentals Logo"
+        url: "/hero-car.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Urban Rentals — Alquiler de Vehículos y Casas en Guinea Ecuatorial"
       },
     ],
     locale: "es_GQ",
@@ -50,9 +50,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Urban Rentals | Alquiler de Vehículos",
-    description: "Renta de autos modernos y seguros en Guinea Ecuatorial.",
-    images: ["/logo.png"],
+    title: "Urban Rentals | Alquiler de Vehículos y Casas en Guinea Ecuatorial",
+    description: "Alquiler de coches, SUV, 4x4 y casas en Malabo y Bata. ¡Reserva hoy con Urban Rentals!",
+    images: ["/hero-car.jpg"],
   },
   robots: {
     index: true,
@@ -72,30 +72,53 @@ export const metadata: Metadata = {
   },
 };
 
-const structuredData = {
-  "@context": "https://schema.org",
-  "@type": ["AutoRental", "LocalBusiness"],
-  "name": "Urban Rentals",
-  "image": "https://urban-rentals.es/logo.png",
-  "url": "https://urban-rentals.es",
-  "telephone": "+240 222 222 222", // Placeholder, you should update this in the layout or via settings
-  "description": "Servicio profesional de alquiler de vehículos en Guinea Ecuatorial.",
-  "address": {
-    "@type": "PostalAddress",
-    "addressLocality": "Malabo", // Adjust if main office is in Bata
-    "addressCountry": "GQ"
+const structuredData = [
+  {
+    "@context": "https://schema.org",
+    "@type": ["AutoRental", "LocalBusiness"],
+    "name": "Urban Rentals — Alquiler de Vehículos",
+    "image": "https://urban-rentals.es/logo.png",
+    "url": "https://urban-rentals.es",
+    "telephone": "+240 222 222 222",
+    "description": "Servicio profesional de alquiler de vehículos en Guinea Ecuatorial. Coches, SUV y 4x4 en Malabo y Bata.",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Malabo",
+      "addressCountry": "GQ"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 3.750412,
+      "longitude": 8.784400
+    },
+    "areaServed": [
+      { "@type": "City", "name": "Malabo" },
+      { "@type": "City", "name": "Bata" },
+      { "@type": "Country", "name": "Guinea Ecuatorial" }
+    ],
+    "priceRange": "$$",
+    "sameAs": ["https://urban-rentals.es"]
   },
-  "geo": {
-    "@type": "GeoCoordinates",
-    "latitude": 3.750412, // Malabo approx coordinates
-    "longitude": 8.784400
-  },
-  "areaServed": {
-    "@type": "Country",
-    "name": "Equatorial Guinea"
-  },
-  "priceRange": "$$"
-};
+  {
+    "@context": "https://schema.org",
+    "@type": ["RealEstateAgent", "LocalBusiness"],
+    "name": "Urban Rentals — Alquiler de Casas",
+    "image": "https://urban-rentals.es/logo.png",
+    "url": "https://casas.urban-rentals.es",
+    "description": "Alquiler de casas, pisos y apartamentos en Guinea Ecuatorial. Propiedades residenciales y corporativas en Malabo y Bata.",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Malabo",
+      "addressCountry": "GQ"
+    },
+    "areaServed": [
+      { "@type": "City", "name": "Malabo" },
+      { "@type": "City", "name": "Bata" },
+      { "@type": "Country", "name": "Guinea Ecuatorial" }
+    ],
+    "priceRange": "$$"
+  }
+];
 
 export default function RootLayout({
   children,

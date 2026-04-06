@@ -1,7 +1,13 @@
-
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+
+export const metadata: Metadata = {
+    title: "Términos y Condiciones",
+    description: "Términos y condiciones de uso de Urban Rentals. Conoce las condiciones del servicio de alquiler de vehículos y casas en Guinea Ecuatorial.",
+    robots: { index: false, follow: true },
+};
 
 export default function TermsPage() {
     return (

@@ -9,6 +9,7 @@ export default function robots(): MetadataRoute.Robots {
             allow: '/',
             disallow: [
                 '/api/',
+                '/login',
                 '/dashboard/',
                 '/fleet/',
                 '/clients/',
@@ -17,7 +18,10 @@ export default function robots(): MetadataRoute.Robots {
                 '/expenses/',
                 '/reports/',
                 '/settings/',
-                '/maintenance/'
+                '/maintenance/',
+                '/requests/',
+                '/agents/',
+                '/owners/',
             ],
         },
         sitemap: `${baseUrl}/sitemap.xml`,
