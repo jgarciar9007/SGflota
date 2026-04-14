@@ -8,6 +8,7 @@ import { Users, Calendar, DollarSign, Eye, CheckCircle, Loader2, Trash2 } from "
 import { formatCurrency } from "@/lib/utils";
 import { toast } from "sonner";
 import ConfirmModal from "@/components/ui/ConfirmModal";
+import AccountSelector from "@/components/ui/AccountSelector";
 
 interface PayrollItem {
     personnelId: string;
@@ -20,9 +21,11 @@ interface PayrollItem {
 }
 
 export default function PayrollTab() {
-    const { payrolls, personnel, addPayroll, deletePayroll, currentUser, canDelete } = useData();
+    const { payrolls, personnel, addPayroll, deletePayroll, currentUser, canDelete, bankAccounts, pettyCashes, addBankTransaction, addCashTransaction } = useData();
     const [showGenerateModal, setShowGenerateModal] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [accountType, setAccountType] = useState<"bank" | "cash" | "">("");
+    const [accountId, setAccountId] = useState("");
     const [confirmModal, setConfirmModal] = useState({
         isOpen: false,
         title: "",
@@ -66,6 +69,10 @@ export default function PayrollTab() {
     };
 
     const handleConfirmPayroll = async () => {
+        if (!accountType || !accountId) {
+            toast.error("Selecciona el medio de pago para la nómina.");
+            return;
+        }
         setIsSubmitting(true);
         try {
             const totalAmount = previewPayroll.reduce((sum, item) => sum + item.total, 0);
@@ -76,8 +83,17 @@ export default function PayrollTab() {
                 status: "Pagado",
                 details: JSON.stringify(previewPayroll)
             });
+            const dateStr = new Date(selectedYear, selectedMonth - 1, 1).toISOString();
+            const desc = `Nómina ${getMonthName(selectedMonth)} ${selectedYear}`;
+            if (accountType === "bank") {
+                addBankTransaction({ bankAccountId: accountId, type: "Retiro", amount: totalAmount, date: dateStr, description: desc }).catch(() => {});
+            } else {
+                addCashTransaction({ pettyCashId: accountId, type: "Egreso", category: "Nómina", amount: totalAmount, date: dateStr, description: desc }).catch(() => {});
+            }
             toast.success("Nómina generada correctamente");
             setShowGenerateModal(false);
+            setAccountType("");
+            setAccountId("");
         } catch (error) {
             console.error("Error generating payroll:", error);
             toast.error("Error al generar la nómina");
@@ -260,7 +276,19 @@ export default function PayrollTab() {
                                 </tfoot>
                             </table>
 
-                            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border">
+                            <div className="mt-6 pt-4 border-t border-border space-y-4">
+                                <AccountSelector
+                                    bankAccounts={bankAccounts}
+                                    pettyCashes={pettyCashes}
+                                    type={accountType}
+                                    accountId={accountId}
+                                    onTypeChange={setAccountType}
+                                    onAccountChange={setAccountId}
+                                    radioName="payroll-account"
+                                    label="Pagar nómina desde"
+                                />
+                            </div>
+                            <div className="flex justify-end gap-3 pt-4">
                                 <Button variant="ghost" onClick={() => setShowGenerateModal(false)}>Cancelar</Button>
                                 <Button onClick={handleConfirmPayroll} disabled={isSubmitting} className="bg-green-600 hover:bg-green-700 text-white">
                                     {isSubmitting ? (

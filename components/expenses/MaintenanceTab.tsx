@@ -7,9 +7,10 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Input } from "@/components/ui/Input";
 import { Plus, X, Wrench, Calendar, DollarSign, Trash2 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import AccountSelector from "@/components/ui/AccountSelector";
 
 export default function MaintenanceTab() {
-    const { maintenances, vehicles, addMaintenance, updateMaintenance, deleteMaintenance, currentUser, canEdit, canDelete } = useData();
+    const { maintenances, vehicles, addMaintenance, updateMaintenance, deleteMaintenance, currentUser, canEdit, canDelete, bankAccounts, pettyCashes, addBankTransaction, addCashTransaction } = useData();
     const [showAddModal, setShowAddModal] = useState(false);
     const [formData, setFormData] = useState({
         vehicleId: "",
@@ -17,21 +18,27 @@ export default function MaintenanceTab() {
         date: new Date().toISOString().split("T")[0],
         cost: "",
     });
+    const [accountType, setAccountType] = useState<"bank" | "cash" | "">("");
+    const [accountId, setAccountId] = useState("");
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        addMaintenance({
-            ...formData,
-            cost: parseFloat(formData.cost.replace(/\s/g, '')),
-            status: "Programado",
-        });
+        if (!accountType || !accountId) {
+            alert("Selecciona el medio de pago antes de continuar.");
+            return;
+        }
+        const cost = parseFloat(formData.cost.replace(/\s/g, ''));
+        addMaintenance({ ...formData, cost, status: "Programado" });
+        // Registrar salida en cuenta
+        if (accountType === "bank") {
+            addBankTransaction({ bankAccountId: accountId, type: "Retiro", amount: cost, date: formData.date, description: `Mantenimiento: ${formData.description}` }).catch(() => {});
+        } else {
+            addCashTransaction({ pettyCashId: accountId, type: "Egreso", category: "Mantenimiento", amount: cost, date: formData.date, description: `Mantenimiento: ${formData.description}` }).catch(() => {});
+        }
         setShowAddModal(false);
-        setFormData({
-            vehicleId: "",
-            description: "",
-            date: new Date().toISOString().split("T")[0],
-            cost: "",
-        });
+        setFormData({ vehicleId: "", description: "", date: new Date().toISOString().split("T")[0], cost: "" });
+        setAccountType("");
+        setAccountId("");
     };
 
     const handleStatusChange = (id: string, status: "Programado" | "En Proceso" | "Completado") => {
@@ -199,6 +206,16 @@ export default function MaintenanceTab() {
                                         <span className="absolute right-3 top-1/2 -translate-y-[calc(50%-2px)] text-muted-foreground text-xs font-medium">FCFA</span>
                                     </div>
                                 </div>
+                                <AccountSelector
+                                    bankAccounts={bankAccounts}
+                                    pettyCashes={pettyCashes}
+                                    type={accountType}
+                                    accountId={accountId}
+                                    onTypeChange={setAccountType}
+                                    onAccountChange={setAccountId}
+                                    radioName="maint-account"
+                                    label="Medio de Pago del Mantenimiento"
+                                />
                             </CardContent>
                             <CardFooter className="border-t border-border pt-6">
                                 <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white">

@@ -9,9 +9,10 @@ import { Plus, Search, Calendar, User, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
 import ConfirmModal from "@/components/ui/ConfirmModal";
+import AccountSelector from "@/components/ui/AccountSelector";
 
 export default function DriverPaymentsTab() {
-    const { driverPayments, personnel, addDriverPayment, deleteDriverPayment, currentUser, canDelete } = useData();
+    const { driverPayments, personnel, addDriverPayment, deleteDriverPayment, currentUser, canDelete, bankAccounts, pettyCashes, addBankTransaction, addCashTransaction } = useData();
     const [showModal, setShowModal] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [confirmModal, setConfirmModal] = useState({
@@ -33,6 +34,8 @@ export default function DriverPaymentsTab() {
         concept: "",
         notes: ""
     });
+    const [accountType, setAccountType] = useState<"bank" | "cash" | "">("");
+    const [accountId, setAccountId] = useState("");
 
     const filteredPayments = driverPayments.filter(payment => {
         const driverName = personnel.find(p => p.id === payment.personnelId)?.name || "";
@@ -42,20 +45,30 @@ export default function DriverPaymentsTab() {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const resetForm = () => {
+        setFormData({ personnelId: "", amount: 0, date: new Date().toISOString().split('T')[0], concept: "", notes: "" });
+        setAccountType("");
+        setAccountId("");
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!accountType || !accountId) {
+            toast.error("Selecciona el medio de pago antes de continuar.");
+            return;
+        }
         setIsSubmitting(true);
         try {
-            await addDriverPayment(formData);
+            addDriverPayment(formData);
+            const driver = personnel.find(p => p.id === formData.personnelId);
+            if (accountType === "bank") {
+                addBankTransaction({ bankAccountId: accountId, type: "Retiro", amount: formData.amount, date: formData.date, description: `Pago conductor: ${driver?.name || ""} — ${formData.concept}` }).catch(() => {});
+            } else {
+                addCashTransaction({ pettyCashId: accountId, type: "Egreso", category: "Pago Conductor", amount: formData.amount, date: formData.date, description: `Pago conductor: ${driver?.name || ""} — ${formData.concept}` }).catch(() => {});
+            }
             toast.success("Pago registrado correctamente");
             setShowModal(false);
-            setFormData({
-                personnelId: "",
-                amount: 0,
-                date: new Date().toISOString().split('T')[0],
-                concept: "",
-                notes: ""
-            });
+            resetForm();
         } catch (error) {
             console.error("Error adding driver payment:", error);
             toast.error("Error al registrar el pago");
@@ -223,6 +236,16 @@ export default function DriverPaymentsTab() {
                                         className="bg-background border-input"
                                     />
                                 </div>
+                                <AccountSelector
+                                    bankAccounts={bankAccounts}
+                                    pettyCashes={pettyCashes}
+                                    type={accountType}
+                                    accountId={accountId}
+                                    onTypeChange={setAccountType}
+                                    onAccountChange={setAccountId}
+                                    radioName="driver-account"
+                                    label="Pagar desde"
+                                />
                                 <div className="flex justify-end gap-2 mt-6">
                                     <Button type="button" variant="ghost" onClick={() => setShowModal(false)} disabled={isSubmitting}>Cancelar</Button>
                                     <Button type="submit" className="bg-orange-600 hover:bg-orange-700 text-white" disabled={isSubmitting}>

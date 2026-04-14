@@ -9,6 +9,7 @@ import { Plus, X, Search, Calendar, Trash2, Edit, AlertTriangle, Clock, CheckCir
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import { formatCurrency } from "@/lib/utils";
 import { toast } from "sonner";
+import AccountSelector from "@/components/ui/AccountSelector";
 
 const DOCUMENT_TYPES = [
     "Permiso de Circulación",
@@ -68,6 +69,10 @@ export default function VehicleDocumentsTab() {
         currentUser,
         canEdit,
         canDelete,
+        bankAccounts,
+        pettyCashes,
+        addBankTransaction,
+        addCashTransaction,
     } = useData();
 
     const [searchTerm, setSearchTerm] = useState("");
@@ -109,6 +114,9 @@ export default function VehicleDocumentsTab() {
         );
     });
 
+    const [accountType, setAccountType] = useState<"bank" | "cash" | "">("");
+    const [accountId, setAccountId] = useState("");
+
     const resetForm = () => {
         setFormData({
             vehicleId: "",
@@ -122,18 +130,26 @@ export default function VehicleDocumentsTab() {
             notes: "",
         });
         setEditingId(null);
+        setAccountType("");
+        setAccountId("");
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        // Require account when creating a paid document
+        if (!editingId && formData.paymentStatus === "Pagado" && (!accountType || !accountId)) {
+            toast.error("Selecciona el medio de pago para documentos pagados.");
+            return;
+        }
         setIsSubmitting(true);
         try {
+            const amount = parseFloat(formData.amount.replace(/\s/g, ''));
             const payload = {
                 vehicleId: formData.vehicleId,
                 categoryId: formData.categoryId || undefined,
                 documentType: formData.documentType,
                 description: formData.description,
-                amount: parseFloat(formData.amount.replace(/\s/g, '')),
+                amount,
                 issueDate: formData.issueDate,
                 expiryDate: formData.expiryDate,
                 paymentStatus: formData.paymentStatus,
@@ -145,6 +161,13 @@ export default function VehicleDocumentsTab() {
                 toast.success("Documento actualizado correctamente.");
             } else {
                 await addVehicleDocument(payload);
+                if (formData.paymentStatus === "Pagado" && accountType && accountId) {
+                    if (accountType === "bank") {
+                        addBankTransaction({ bankAccountId: accountId, type: "Retiro", amount, date: formData.issueDate, description: `Doc. vehículo: ${formData.documentType} — ${formData.description}` }).catch(() => {});
+                    } else {
+                        addCashTransaction({ pettyCashId: accountId, type: "Egreso", category: "Documentos Vehiculares", amount, date: formData.issueDate, description: `Doc. vehículo: ${formData.documentType} — ${formData.description}` }).catch(() => {});
+                    }
+                }
                 toast.success("Documento registrado correctamente.");
             }
             setShowModal(false);
@@ -443,6 +466,18 @@ export default function VehicleDocumentsTab() {
                                         placeholder="Observaciones opcionales..."
                                     />
                                 </div>
+                                {!editingId && formData.paymentStatus === "Pagado" && (
+                                    <AccountSelector
+                                        bankAccounts={bankAccounts}
+                                        pettyCashes={pettyCashes}
+                                        type={accountType}
+                                        accountId={accountId}
+                                        onTypeChange={setAccountType}
+                                        onAccountChange={setAccountId}
+                                        radioName="doc-account"
+                                        label="Pagar desde"
+                                    />
+                                )}
                             </CardContent>
                             <CardFooter className="border-t border-border pt-6">
                                 <Button

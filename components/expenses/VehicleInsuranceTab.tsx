@@ -9,6 +9,7 @@ import { Plus, X, Search, Calendar, Trash2, Edit, AlertTriangle, Clock, CheckCir
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import { formatCurrency } from "@/lib/utils";
 import { toast } from "sonner";
+import AccountSelector from "@/components/ui/AccountSelector";
 
 function getAlertStatus(expiryDate: string): "Vencido" | "Próximo a Vencer" | "Vigente" {
     const diffDays = Math.ceil((new Date(expiryDate).getTime() - Date.now()) / 86400000);
@@ -60,6 +61,10 @@ export default function VehicleInsuranceTab() {
         currentUser,
         canEdit,
         canDelete,
+        bankAccounts,
+        pettyCashes,
+        addBankTransaction,
+        addCashTransaction,
     } = useData();
 
     const [searchTerm, setSearchTerm] = useState("");
@@ -103,6 +108,9 @@ export default function VehicleInsuranceTab() {
         );
     });
 
+    const [accountType, setAccountType] = useState<"bank" | "cash" | "">("");
+    const [accountId, setAccountId] = useState("");
+
     const resetForm = () => {
         setFormData({
             vehicleId: "",
@@ -117,19 +125,26 @@ export default function VehicleInsuranceTab() {
             notes: "",
         });
         setEditingId(null);
+        setAccountType("");
+        setAccountId("");
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!editingId && formData.paymentStatus === "Pagado" && (!accountType || !accountId)) {
+            toast.error("Selecciona el medio de pago para seguros pagados.");
+            return;
+        }
         setIsSubmitting(true);
         try {
+            const amount = parseFloat(formData.amount.replace(/\s/g, ''));
             const payload = {
                 vehicleId: formData.vehicleId,
                 categoryId: formData.categoryId || undefined,
                 insurer: formData.insurer,
                 policyNumber: formData.policyNumber,
                 coverageType: formData.coverageType,
-                amount: parseFloat(formData.amount.replace(/\s/g, '')),
+                amount,
                 startDate: formData.startDate,
                 expiryDate: formData.expiryDate,
                 paymentStatus: formData.paymentStatus,
@@ -141,6 +156,13 @@ export default function VehicleInsuranceTab() {
                 toast.success("Seguro actualizado correctamente.");
             } else {
                 await addVehicleInsurance(payload);
+                if (formData.paymentStatus === "Pagado" && accountType && accountId) {
+                    if (accountType === "bank") {
+                        addBankTransaction({ bankAccountId: accountId, type: "Retiro", amount, date: formData.startDate, description: `Seguro: ${formData.insurer} — ${formData.coverageType}` }).catch(() => {});
+                    } else {
+                        addCashTransaction({ pettyCashId: accountId, type: "Egreso", category: "Seguros Vehiculares", amount, date: formData.startDate, description: `Seguro: ${formData.insurer} — ${formData.coverageType}` }).catch(() => {});
+                    }
+                }
                 toast.success("Seguro registrado correctamente.");
             }
             setShowModal(false);
@@ -449,6 +471,18 @@ export default function VehicleInsuranceTab() {
                                         placeholder="Observaciones opcionales..."
                                     />
                                 </div>
+                                {!editingId && formData.paymentStatus === "Pagado" && (
+                                    <AccountSelector
+                                        bankAccounts={bankAccounts}
+                                        pettyCashes={pettyCashes}
+                                        type={accountType}
+                                        accountId={accountId}
+                                        onTypeChange={setAccountType}
+                                        onAccountChange={setAccountId}
+                                        radioName="ins-account"
+                                        label="Pagar desde"
+                                    />
+                                )}
                             </CardContent>
                             <CardFooter className="border-t border-border pt-6">
                                 <Button

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { DollarSign, Calendar, User, CheckCircle, Plus, X, Printer, CreditCard, FileText, Loader2, Edit, Trash2, Percent } from "lucide-react";
+import AccountSelector from "@/components/ui/AccountSelector";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
 
@@ -33,9 +34,13 @@ export default function BillingPage() {
     const [totalPaymentAmount, setTotalPaymentAmount] = useState("");
     const [paymentMethod, setPaymentMethod] = useState("Transferencia");
     const [allocations, setAllocations] = useState<{ invoiceId: string; amount: number }[]>([]);
-    // Banco y Efectivo — selección opcional al registrar pago
-    const [paymentAccountType, setPaymentAccountType] = useState<"none" | "bank" | "cash">("none");
+    // Banco y Efectivo — cuenta obligatoria al registrar pago
+    const [paymentAccountType, setPaymentAccountType] = useState<"bank" | "cash" | "">("");
     const [paymentAccountId, setPaymentAccountId] = useState("");
+    // Cuentas por pagar — modal de selección de cuenta
+    const [payableAccountModal, setPayableAccountModal] = useState<{ isOpen: boolean; ap: any | null }>({ isOpen: false, ap: null });
+    const [payableAccType, setPayableAccType] = useState<"bank" | "cash" | "">("");
+    const [payableAccId, setPayableAccId] = useState("");
 
     const [formData, setFormData] = useState({
         clientId: "",
@@ -127,43 +132,23 @@ export default function BillingPage() {
 
     const handleConfirmPayment = async () => {
         if (allocations.length === 0) return;
+        if (!paymentAccountType || !paymentAccountId) {
+            toast.error("Selecciona el medio de pago antes de confirmar.");
+            return;
+        }
 
         const receiptId = await addPayment(selectedClientId, allocations, paymentMethod);
 
-        // Registrar en cuenta si se seleccionó una
         const totalPaid = allocations.reduce((s, a) => s + a.amount, 0);
-        if (paymentAccountType === "bank" && paymentAccountId) {
-            try {
-                await addBankTransaction({
-                    bankAccountId: paymentAccountId,
-                    type: "Deposito",
-                    amount: totalPaid,
-                    date: new Date().toISOString(),
-                    description: `Pago de renta — recibo ${receiptId.slice(-6)}`,
-                    paymentId: receiptId,
-                });
-            } catch { /* silencioso — el pago ya fue registrado */ }
-        } else if (paymentAccountType === "cash" && paymentAccountId) {
-            try {
-                await addCashTransaction({
-                    pettyCashId: paymentAccountId,
-                    type: "Ingreso",
-                    category: "Pago de Renta",
-                    amount: totalPaid,
-                    date: new Date().toISOString(),
-                    description: `Pago de renta — recibo ${receiptId.slice(-6)}`,
-                    paymentId: receiptId,
-                });
-            } catch { /* silencioso */ }
+        if (paymentAccountType === "bank") {
+            addBankTransaction({ bankAccountId: paymentAccountId, type: "Deposito", amount: totalPaid, date: new Date().toISOString(), description: `Pago de renta — recibo ${receiptId.slice(-6)}`, paymentId: receiptId }).catch(() => {});
+        } else {
+            addCashTransaction({ pettyCashId: paymentAccountId, type: "Ingreso", category: "Pago de Renta", amount: totalPaid, date: new Date().toISOString(), description: `Pago de renta — recibo ${receiptId.slice(-6)}`, paymentId: receiptId }).catch(() => {});
         }
 
-        // Generate receipt
-        setTimeout(() => {
-            handlePrintReceipt(receiptId);
-        }, 100);
-
+        setTimeout(() => { handlePrintReceipt(receiptId); }, 100);
         setShowPaymentModal(false);
-        setPaymentAccountType("none");
+        setPaymentAccountType("");
         setPaymentAccountId("");
     };
 
@@ -1149,27 +1134,9 @@ export default function BillingPage() {
                                                     <div className="flex items-center justify-end">
                                                         <Button
                                                             onClick={() => {
-                                                                setConfirmModal({
-                                                                    isOpen: true,
-                                                                    title: "Confirmar Pago",
-                                                                    description: `¿Estás a punto de registrar un pago de ${formatCurrency(ap.amount)} a ${ap.beneficiaryName}. ¿Deseas continuar?`,
-                                                                    confirmText: "Pagar",
-                                                                    variant: "success",
-                                                                    onConfirm: async () => {
-                                                                        setConfirmModal(prev => ({ ...prev, isOpen: false }));
-                                                                        try {
-                                                                            const loadingToast = toast.loading("Procesando pago...");
-                                                                            await updateAccountPayable(ap.id, { status: "Pagado" });
-                                                                            toast.dismiss(loadingToast);
-                                                                            toast.success("Pago registrado correctamente");
-                                                                            // Short delay to allow state update before print
-                                                                            setTimeout(() => handlePrintPayableReceipt(ap.id), 500);
-                                                                        } catch (error) {
-                                                                            console.error("Error updating payable:", error);
-                                                                            toast.error("Error al registrar el pago");
-                                                                        }
-                                                                    }
-                                                                });
+                                                                setPayableAccType("");
+                                                                setPayableAccId("");
+                                                                setPayableAccountModal({ isOpen: true, ap });
                                                             }}
                                                             className="bg-green-600 hover:bg-green-700 text-white"
                                                         >
@@ -1537,45 +1504,16 @@ export default function BillingPage() {
                                             </select>
                                         </div>
 
-                                        {/* Registrar en cuenta (opcional) */}
-                                        <div className="border border-border rounded-lg p-4 bg-muted/30 space-y-3">
-                                            <p className="text-sm font-medium text-foreground">Registrar en cuenta <span className="text-muted-foreground font-normal">(opcional)</span></p>
-                                            <div className="flex gap-3">
-                                                <label className={`flex items-center gap-2 cursor-pointer text-sm px-3 py-1.5 rounded border transition-colors ${paymentAccountType === "none" ? "border-blue-500 bg-blue-50 text-blue-700" : "border-border text-muted-foreground"}`}>
-                                                    <input type="radio" name="payAccType" value="none" checked={paymentAccountType === "none"}
-                                                        onChange={() => { setPaymentAccountType("none"); setPaymentAccountId(""); }} className="sr-only" />
-                                                    Ninguna
-                                                </label>
-                                                <label className={`flex items-center gap-2 cursor-pointer text-sm px-3 py-1.5 rounded border transition-colors ${paymentAccountType === "bank" ? "border-blue-500 bg-blue-50 text-blue-700" : "border-border text-muted-foreground"}`}>
-                                                    <input type="radio" name="payAccType" value="bank" checked={paymentAccountType === "bank"}
-                                                        onChange={() => { setPaymentAccountType("bank"); setPaymentAccountId(""); }} className="sr-only" />
-                                                    Cuenta Bancaria
-                                                </label>
-                                                <label className={`flex items-center gap-2 cursor-pointer text-sm px-3 py-1.5 rounded border transition-colors ${paymentAccountType === "cash" ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-border text-muted-foreground"}`}>
-                                                    <input type="radio" name="payAccType" value="cash" checked={paymentAccountType === "cash"}
-                                                        onChange={() => { setPaymentAccountType("cash"); setPaymentAccountId(""); }} className="sr-only" />
-                                                    Caja Chica
-                                                </label>
-                                            </div>
-                                            {paymentAccountType === "bank" && (
-                                                <select value={paymentAccountId} onChange={e => setPaymentAccountId(e.target.value)}
-                                                    className="w-full bg-background border border-border rounded-md p-2 text-foreground text-sm">
-                                                    <option value="">Seleccionar cuenta bancaria</option>
-                                                    {bankAccounts.filter(a => a.active).map(a => (
-                                                        <option key={a.id} value={a.id}>{a.name}</option>
-                                                    ))}
-                                                </select>
-                                            )}
-                                            {paymentAccountType === "cash" && (
-                                                <select value={paymentAccountId} onChange={e => setPaymentAccountId(e.target.value)}
-                                                    className="w-full bg-background border border-border rounded-md p-2 text-foreground text-sm">
-                                                    <option value="">Seleccionar caja chica</option>
-                                                    {pettyCashes.filter(p => p.active).map(p => (
-                                                        <option key={p.id} value={p.id}>{p.name}</option>
-                                                    ))}
-                                                </select>
-                                            )}
-                                        </div>
+                                        <AccountSelector
+                                            bankAccounts={bankAccounts}
+                                            pettyCashes={pettyCashes}
+                                            type={paymentAccountType}
+                                            accountId={paymentAccountId}
+                                            onTypeChange={setPaymentAccountType}
+                                            onAccountChange={setPaymentAccountId}
+                                            radioName="pay-account"
+                                            label="Registrar ingreso en"
+                                        />
 
                                         <div className="flex justify-end gap-2 pt-4">
                                             <Button variant="ghost" onClick={() => setPaymentStep(2)} className="text-muted-foreground hover:text-foreground">Volver</Button>
@@ -2080,6 +2018,64 @@ export default function BillingPage() {
                 confirmText={confirmModal.confirmText}
                 variant={confirmModal.variant}
             />
+
+            {/* Modal: Pagar cuenta por pagar con selección de cuenta */}
+            {payableAccountModal.isOpen && payableAccountModal.ap && (
+                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <Card className="w-full max-w-md border-border bg-card shadow-xl">
+                        <CardHeader className="flex flex-row items-center justify-between border-b border-border">
+                            <CardTitle className="text-foreground">Confirmar Pago</CardTitle>
+                            <button onClick={() => setPayableAccountModal({ isOpen: false, ap: null })} className="text-muted-foreground hover:text-foreground">
+                                <X className="h-5 w-5" />
+                            </button>
+                        </CardHeader>
+                        <CardContent className="p-6 space-y-4">
+                            <div className="bg-muted/30 rounded-lg p-3 text-sm space-y-1">
+                                <p className="text-muted-foreground">Beneficiario</p>
+                                <p className="font-semibold text-foreground">{payableAccountModal.ap.beneficiaryName}</p>
+                                <p className="text-2xl font-bold text-green-600">{formatCurrency(payableAccountModal.ap.amount)}</p>
+                            </div>
+                            <AccountSelector
+                                bankAccounts={bankAccounts}
+                                pettyCashes={pettyCashes}
+                                type={payableAccType}
+                                accountId={payableAccId}
+                                onTypeChange={setPayableAccType}
+                                onAccountChange={setPayableAccId}
+                                radioName="payable-account"
+                                label="Pagar desde"
+                            />
+                            <div className="flex gap-2 justify-end pt-2">
+                                <Button variant="ghost" onClick={() => setPayableAccountModal({ isOpen: false, ap: null })}>Cancelar</Button>
+                                <Button
+                                    className="bg-green-600 hover:bg-green-700 text-white"
+                                    disabled={!payableAccType || !payableAccId}
+                                    onClick={async () => {
+                                        const ap = payableAccountModal.ap;
+                                        setPayableAccountModal({ isOpen: false, ap: null });
+                                        try {
+                                            const loadingToast = toast.loading("Procesando pago...");
+                                            await updateAccountPayable(ap.id, { status: "Pagado" });
+                                            if (payableAccType === "bank") {
+                                                addBankTransaction({ bankAccountId: payableAccId, type: "Retiro", amount: ap.amount, date: new Date().toISOString(), description: `Pago a ${ap.beneficiaryName}` }).catch(() => {});
+                                            } else {
+                                                addCashTransaction({ pettyCashId: payableAccId, type: "Egreso", category: "Pago a Tercero", amount: ap.amount, date: new Date().toISOString(), description: `Pago a ${ap.beneficiaryName}` }).catch(() => {});
+                                            }
+                                            toast.dismiss(loadingToast);
+                                            toast.success("Pago registrado correctamente");
+                                            setTimeout(() => handlePrintPayableReceipt(ap.id), 500);
+                                        } catch {
+                                            toast.error("Error al registrar el pago");
+                                        }
+                                    }}
+                                >
+                                    <CreditCard className="mr-2 h-4 w-4" /> Confirmar Pago
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
         </div >
     );
 }
