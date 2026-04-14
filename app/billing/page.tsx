@@ -13,7 +13,7 @@ import { generateDocumentHtml } from "@/lib/reportUtils";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 
 export default function BillingPage() {
-    const { invoices, clients, rentals, vehicles, companySettings, addInvoice, updateInvoice, deleteInvoice, addPayment, updatePayment, deletePayment, payments, refunds, updateRefund, deleteRefund, accountsPayable, updateAccountPayable, deleteAccountPayable, expenseCategories, currentUser, canEdit, canDelete, ivaRecords, updateIvaRecord, deleteIvaRecord } = useData();
+    const { invoices, clients, rentals, vehicles, companySettings, addInvoice, updateInvoice, deleteInvoice, addPayment, updatePayment, deletePayment, payments, refunds, updateRefund, deleteRefund, accountsPayable, updateAccountPayable, deleteAccountPayable, expenseCategories, currentUser, canEdit, canDelete, ivaRecords, updateIvaRecord, deleteIvaRecord, bankAccounts, pettyCashes, addBankTransaction, addCashTransaction } = useData();
     const [activeTab, setActiveTab] = useState<"invoices" | "history" | "refunds" | "payables" | "iva">("invoices");
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
@@ -33,6 +33,9 @@ export default function BillingPage() {
     const [totalPaymentAmount, setTotalPaymentAmount] = useState("");
     const [paymentMethod, setPaymentMethod] = useState("Transferencia");
     const [allocations, setAllocations] = useState<{ invoiceId: string; amount: number }[]>([]);
+    // Banco y Efectivo — selección opcional al registrar pago
+    const [paymentAccountType, setPaymentAccountType] = useState<"none" | "bank" | "cash">("none");
+    const [paymentAccountId, setPaymentAccountId] = useState("");
 
     const [formData, setFormData] = useState({
         clientId: "",
@@ -127,12 +130,41 @@ export default function BillingPage() {
 
         const receiptId = await addPayment(selectedClientId, allocations, paymentMethod);
 
+        // Registrar en cuenta si se seleccionó una
+        const totalPaid = allocations.reduce((s, a) => s + a.amount, 0);
+        if (paymentAccountType === "bank" && paymentAccountId) {
+            try {
+                await addBankTransaction({
+                    bankAccountId: paymentAccountId,
+                    type: "Deposito",
+                    amount: totalPaid,
+                    date: new Date().toISOString(),
+                    description: `Pago de renta — recibo ${receiptId.slice(-6)}`,
+                    paymentId: receiptId,
+                });
+            } catch { /* silencioso — el pago ya fue registrado */ }
+        } else if (paymentAccountType === "cash" && paymentAccountId) {
+            try {
+                await addCashTransaction({
+                    pettyCashId: paymentAccountId,
+                    type: "Ingreso",
+                    category: "Pago de Renta",
+                    amount: totalPaid,
+                    date: new Date().toISOString(),
+                    description: `Pago de renta — recibo ${receiptId.slice(-6)}`,
+                    paymentId: receiptId,
+                });
+            } catch { /* silencioso */ }
+        }
+
         // Generate receipt
         setTimeout(() => {
             handlePrintReceipt(receiptId);
         }, 100);
 
         setShowPaymentModal(false);
+        setPaymentAccountType("none");
+        setPaymentAccountId("");
     };
 
     const handleDeleteReceipt = async (receiptId: string) => {
@@ -1503,6 +1535,46 @@ export default function BillingPage() {
                                                 <option value="Tarjeta">Tarjeta de Crédito/Débito</option>
                                                 <option value="Cheque">Cheque</option>
                                             </select>
+                                        </div>
+
+                                        {/* Registrar en cuenta (opcional) */}
+                                        <div className="border border-border rounded-lg p-4 bg-muted/30 space-y-3">
+                                            <p className="text-sm font-medium text-foreground">Registrar en cuenta <span className="text-muted-foreground font-normal">(opcional)</span></p>
+                                            <div className="flex gap-3">
+                                                <label className={`flex items-center gap-2 cursor-pointer text-sm px-3 py-1.5 rounded border transition-colors ${paymentAccountType === "none" ? "border-blue-500 bg-blue-50 text-blue-700" : "border-border text-muted-foreground"}`}>
+                                                    <input type="radio" name="payAccType" value="none" checked={paymentAccountType === "none"}
+                                                        onChange={() => { setPaymentAccountType("none"); setPaymentAccountId(""); }} className="sr-only" />
+                                                    Ninguna
+                                                </label>
+                                                <label className={`flex items-center gap-2 cursor-pointer text-sm px-3 py-1.5 rounded border transition-colors ${paymentAccountType === "bank" ? "border-blue-500 bg-blue-50 text-blue-700" : "border-border text-muted-foreground"}`}>
+                                                    <input type="radio" name="payAccType" value="bank" checked={paymentAccountType === "bank"}
+                                                        onChange={() => { setPaymentAccountType("bank"); setPaymentAccountId(""); }} className="sr-only" />
+                                                    Cuenta Bancaria
+                                                </label>
+                                                <label className={`flex items-center gap-2 cursor-pointer text-sm px-3 py-1.5 rounded border transition-colors ${paymentAccountType === "cash" ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-border text-muted-foreground"}`}>
+                                                    <input type="radio" name="payAccType" value="cash" checked={paymentAccountType === "cash"}
+                                                        onChange={() => { setPaymentAccountType("cash"); setPaymentAccountId(""); }} className="sr-only" />
+                                                    Caja Chica
+                                                </label>
+                                            </div>
+                                            {paymentAccountType === "bank" && (
+                                                <select value={paymentAccountId} onChange={e => setPaymentAccountId(e.target.value)}
+                                                    className="w-full bg-background border border-border rounded-md p-2 text-foreground text-sm">
+                                                    <option value="">Seleccionar cuenta bancaria</option>
+                                                    {bankAccounts.filter(a => a.active).map(a => (
+                                                        <option key={a.id} value={a.id}>{a.name}</option>
+                                                    ))}
+                                                </select>
+                                            )}
+                                            {paymentAccountType === "cash" && (
+                                                <select value={paymentAccountId} onChange={e => setPaymentAccountId(e.target.value)}
+                                                    className="w-full bg-background border border-border rounded-md p-2 text-foreground text-sm">
+                                                    <option value="">Seleccionar caja chica</option>
+                                                    {pettyCashes.filter(p => p.active).map(p => (
+                                                        <option key={p.id} value={p.id}>{p.name}</option>
+                                                    ))}
+                                                </select>
+                                            )}
                                         </div>
 
                                         <div className="flex justify-end gap-2 pt-4">

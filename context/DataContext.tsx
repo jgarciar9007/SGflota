@@ -275,6 +275,75 @@ export interface Owner {
     status: "Activo" | "Inactivo";
 }
 
+// --- Banco y Efectivo ---
+
+export interface Bank {
+    id: string;
+    name: string;
+    code?: string;
+    active: boolean;
+}
+
+export interface BankAccount {
+    id: string;
+    bankId: string;
+    name: string;
+    accountNumber?: string;
+    type: "Corriente" | "Ahorros";
+    openingBalance: number;
+    currentBalance: number;
+    active: boolean;
+    bank?: Bank;
+}
+
+export interface PettyCash {
+    id: string;
+    name: string;
+    openingBalance: number;
+    currentBalance: number;
+    active: boolean;
+}
+
+export interface BankTransaction {
+    id: string;
+    bankAccountId: string;
+    type: "Deposito" | "Retiro" | "Transferencia";
+    amount: number;
+    date: string;
+    description: string;
+    reference?: string;
+    paymentId?: string;
+    expenseId?: string;
+    transferId?: string;
+    bankAccount?: BankAccount;
+}
+
+export interface CashTransaction {
+    id: string;
+    pettyCashId: string;
+    type: "Ingreso" | "Egreso";
+    category: string;
+    amount: number;
+    date: string;
+    description: string;
+    reference?: string;
+    paymentId?: string;
+    expenseId?: string;
+    transferId?: string;
+    pettyCash?: PettyCash;
+}
+
+export interface Transfer {
+    id: string;
+    type: "BancoABanco" | "CajaABanco";
+    amount: number;
+    date: string;
+    description: string;
+    sourceBankAccountId?: string;
+    destBankAccountId?: string;
+    pettyCashId?: string;
+}
+
 interface DataContextType {
     vehicles: Vehicle[];
     clients: Client[];
@@ -296,6 +365,26 @@ interface DataContextType {
     vehicleDocuments: VehicleDocument[];
     vehicleInsurances: VehicleInsurance[];
     ivaRecords: IvaRecord[];
+    banks: Bank[];
+    bankAccounts: BankAccount[];
+    pettyCashes: PettyCash[];
+    bankTransactions: BankTransaction[];
+    cashTransactions: CashTransaction[];
+    transfers: Transfer[];
+    addBank: (bank: Omit<Bank, "id">) => Promise<void>;
+    updateBank: (id: string, updates: Partial<Bank>) => Promise<void>;
+    deleteBank: (id: string) => Promise<void>;
+    addBankAccount: (account: Omit<BankAccount, "id" | "bank">) => Promise<void>;
+    updateBankAccount: (id: string, updates: Partial<BankAccount>) => Promise<void>;
+    deleteBankAccount: (id: string) => Promise<void>;
+    addPettyCash: (pc: Omit<PettyCash, "id">) => Promise<void>;
+    updatePettyCash: (id: string, updates: Partial<PettyCash>) => Promise<void>;
+    deletePettyCash: (id: string) => Promise<void>;
+    addBankTransaction: (tx: Omit<BankTransaction, "id" | "bankAccount">) => Promise<BankTransaction>;
+    deleteBankTransaction: (id: string) => Promise<void>;
+    addCashTransaction: (tx: Omit<CashTransaction, "id" | "pettyCash">) => Promise<CashTransaction>;
+    deleteCashTransaction: (id: string) => Promise<void>;
+    addTransfer: (transfer: Omit<Transfer, "id">) => Promise<void>;
     addVehicle: (vehicle: Omit<Vehicle, "id">) => void;
     updateVehicle: (id: string, updates: Partial<Vehicle>) => void;
     deleteVehicle: (id: string) => void;
@@ -331,7 +420,7 @@ interface DataContextType {
     deleteOwner: (id: string) => void;
     deleteRefund: (id: string) => void;
     deleteAccountPayable: (id: string) => void;
-    addExpense: (expense: Omit<Expense, "id">) => void;
+    addExpense: (expense: Omit<Expense, "id">) => Promise<Expense>;
     updateExpense: (id: string, updates: Partial<Expense>) => void;
     deleteExpense: (id: string) => void;
     addExpenseCategory: (category: Omit<ExpenseCategory, "id">) => void;
@@ -394,6 +483,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const [vehicleDocuments, setVehicleDocuments] = useState<VehicleDocument[]>([]);
     const [vehicleInsurances, setVehicleInsurances] = useState<VehicleInsurance[]>([]);
     const [ivaRecords, setIvaRecords] = useState<IvaRecord[]>([]);
+    const [banks, setBanks] = useState<Bank[]>([]);
+    const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
+    const [pettyCashes, setPettyCashes] = useState<PettyCash[]>([]);
+    const [bankTransactions, setBankTransactions] = useState<BankTransaction[]>([]);
+    const [cashTransactions, setCashTransactions] = useState<CashTransaction[]>([]);
+    const [transfers, setTransfers] = useState<Transfer[]>([]);
 
     const { data: session, status } = useSession();
     const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -403,7 +498,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setIsLoading(true);
         try {
             const [
-                v, c, r, i, m, s, u, p, ref, exp, expCat, own, agt, ap, per, dp, pay, vd, vi, iva
+                v, c, r, i, m, s, u, p, ref, exp, expCat, own, agt, ap, per, dp, pay, vd, vi, iva,
+                bnks, bkAcc, pcash, bkTx, cshTx, trf
             ] = await Promise.all([
                 fetch('/api/vehicles').then(res => res.json()),
                 fetch('/api/clients').then(res => res.json()),
@@ -425,6 +521,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
                 fetch('/api/vehicle-documents').then(res => res.json()),
                 fetch('/api/vehicle-insurance').then(res => res.json()),
                 fetch('/api/iva').then(res => res.json()),
+                fetch('/api/banks').then(res => res.json()),
+                fetch('/api/bank-accounts').then(res => res.json()),
+                fetch('/api/petty-cash').then(res => res.json()),
+                fetch('/api/bank-transactions').then(res => res.json()),
+                fetch('/api/cash-transactions').then(res => res.json()),
+                fetch('/api/transfers').then(res => res.json()),
             ]);
 
             setVehicles(v);
@@ -447,6 +549,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
             setVehicleDocuments(Array.isArray(vd) ? vd : []);
             setVehicleInsurances(Array.isArray(vi) ? vi : []);
             setIvaRecords(Array.isArray(iva) ? iva : []);
+            setBanks(Array.isArray(bnks) ? bnks : []);
+            setBankAccounts(Array.isArray(bkAcc) ? bkAcc : []);
+            setPettyCashes(Array.isArray(pcash) ? pcash : []);
+            setBankTransactions(Array.isArray(bkTx) ? bkTx : []);
+            setCashTransactions(Array.isArray(cshTx) ? cshTx : []);
+            setTransfers(Array.isArray(trf) ? trf : []);
 
 
 
@@ -740,9 +848,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setOwners(prev => prev.filter(o => o.id !== id));
     };
 
-    const addExpense = async (expense: Omit<Expense, "id">) => {
+    const addExpense = async (expense: Omit<Expense, "id">): Promise<Expense> => {
         const res = await apiCall('/api/expenses', 'POST', expense);
         setExpenses(prev => [...prev, res]);
+        return res;
     };
     const updateExpense = async (id: string, updates: Partial<Expense>) => {
         const res = await apiCall('/api/expenses', 'PUT', { id, ...updates });
@@ -836,6 +945,111 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const deleteIvaRecord = async (id: string) => {
         await apiCall(`/api/iva?id=${id}`, 'DELETE');
         setIvaRecords(prev => prev.filter(r => r.id !== id));
+    };
+
+    // --- Banco y Efectivo ---
+
+    const addBank = async (bank: Omit<Bank, "id">) => {
+        const res = await apiCall('/api/banks', 'POST', bank);
+        setBanks(prev => [...prev, res]);
+    };
+    const updateBank = async (id: string, updates: Partial<Bank>) => {
+        const res = await apiCall('/api/banks', 'PUT', { id, ...updates });
+        setBanks(prev => prev.map(b => b.id === id ? res : b));
+    };
+    const deleteBank = async (id: string) => {
+        await apiCall(`/api/banks?id=${id}`, 'DELETE');
+        setBanks(prev => prev.filter(b => b.id !== id));
+    };
+
+    const addBankAccount = async (account: Omit<BankAccount, "id" | "bank">) => {
+        const res = await apiCall('/api/bank-accounts', 'POST', account);
+        setBankAccounts(prev => [...prev, res]);
+    };
+    const updateBankAccount = async (id: string, updates: Partial<BankAccount>) => {
+        const res = await apiCall('/api/bank-accounts', 'PUT', { id, ...updates });
+        setBankAccounts(prev => prev.map(a => a.id === id ? res : a));
+    };
+    const deleteBankAccount = async (id: string) => {
+        await apiCall(`/api/bank-accounts?id=${id}`, 'DELETE');
+        setBankAccounts(prev => prev.filter(a => a.id !== id));
+    };
+
+    const addPettyCash = async (pc: Omit<PettyCash, "id">) => {
+        const res = await apiCall('/api/petty-cash', 'POST', pc);
+        setPettyCashes(prev => [...prev, res]);
+    };
+    const updatePettyCash = async (id: string, updates: Partial<PettyCash>) => {
+        const res = await apiCall('/api/petty-cash', 'PUT', { id, ...updates });
+        setPettyCashes(prev => prev.map(p => p.id === id ? res : p));
+    };
+    const deletePettyCash = async (id: string) => {
+        await apiCall(`/api/petty-cash?id=${id}`, 'DELETE');
+        setPettyCashes(prev => prev.filter(p => p.id !== id));
+    };
+
+    const addBankTransaction = async (tx: Omit<BankTransaction, "id" | "bankAccount">): Promise<BankTransaction> => {
+        const res = await apiCall('/api/bank-transactions', 'POST', tx);
+        setBankTransactions(prev => [res, ...prev]);
+        // Update account balance in local state
+        setBankAccounts(prev => prev.map(a =>
+            a.id === tx.bankAccountId
+                ? { ...a, currentBalance: a.currentBalance + (tx.type === "Deposito" ? tx.amount : -tx.amount) }
+                : a
+        ));
+        return res;
+    };
+    const deleteBankTransaction = async (id: string) => {
+        const tx = bankTransactions.find(t => t.id === id);
+        await apiCall(`/api/bank-transactions?id=${id}`, 'DELETE');
+        setBankTransactions(prev => prev.filter(t => t.id !== id));
+        if (tx) {
+            setBankAccounts(prev => prev.map(a =>
+                a.id === tx.bankAccountId
+                    ? { ...a, currentBalance: a.currentBalance + (tx.type === "Deposito" ? -tx.amount : tx.amount) }
+                    : a
+            ));
+        }
+    };
+
+    const addCashTransaction = async (tx: Omit<CashTransaction, "id" | "pettyCash">): Promise<CashTransaction> => {
+        const res = await apiCall('/api/cash-transactions', 'POST', tx);
+        setCashTransactions(prev => [res, ...prev]);
+        setPettyCashes(prev => prev.map(p =>
+            p.id === tx.pettyCashId
+                ? { ...p, currentBalance: p.currentBalance + (tx.type === "Ingreso" ? tx.amount : -tx.amount) }
+                : p
+        ));
+        return res;
+    };
+    const deleteCashTransaction = async (id: string) => {
+        const tx = cashTransactions.find(t => t.id === id);
+        await apiCall(`/api/cash-transactions?id=${id}`, 'DELETE');
+        setCashTransactions(prev => prev.filter(t => t.id !== id));
+        if (tx) {
+            setPettyCashes(prev => prev.map(p =>
+                p.id === tx.pettyCashId
+                    ? { ...p, currentBalance: p.currentBalance + (tx.type === "Ingreso" ? -tx.amount : tx.amount) }
+                    : p
+            ));
+        }
+    };
+
+    const addTransfer = async (transfer: Omit<Transfer, "id">) => {
+        await apiCall('/api/transfers', 'POST', transfer);
+        // Refetch to get consistent balances
+        const [bkAcc, pcash, bkTx, cshTx, trf] = await Promise.all([
+            fetch('/api/bank-accounts').then(r => r.json()),
+            fetch('/api/petty-cash').then(r => r.json()),
+            fetch('/api/bank-transactions').then(r => r.json()),
+            fetch('/api/cash-transactions').then(r => r.json()),
+            fetch('/api/transfers').then(r => r.json()),
+        ]);
+        setBankAccounts(Array.isArray(bkAcc) ? bkAcc : []);
+        setPettyCashes(Array.isArray(pcash) ? pcash : []);
+        setBankTransactions(Array.isArray(bkTx) ? bkTx : []);
+        setCashTransactions(Array.isArray(cshTx) ? cshTx : []);
+        setTransfers(Array.isArray(trf) ? trf : []);
     };
 
     // Auth Methods
@@ -944,6 +1158,26 @@ export function DataProvider({ children }: { children: ReactNode }) {
                 deleteVehicleInsurance,
                 updateIvaRecord,
                 deleteIvaRecord,
+                banks,
+                bankAccounts,
+                pettyCashes,
+                bankTransactions,
+                cashTransactions,
+                transfers,
+                addBank,
+                updateBank,
+                deleteBank,
+                addBankAccount,
+                updateBankAccount,
+                deleteBankAccount,
+                addPettyCash,
+                updatePettyCash,
+                deletePettyCash,
+                addBankTransaction,
+                deleteBankTransaction,
+                addCashTransaction,
+                deleteCashTransaction,
+                addTransfer,
                 currentUser,
                 login,
                 logout,

@@ -33,7 +33,12 @@ export default function ReportsPage() {
         payrolls,
         driverPayments,
         companySettings,
-        personnel
+        personnel,
+        bankAccounts,
+        pettyCashes,
+        bankTransactions,
+        cashTransactions,
+        banks,
     } = useData();
 
     const [dateRange, setDateRange] = React.useState({
@@ -841,6 +846,118 @@ export default function ReportsPage() {
     };
 
 
+    // ==========================================
+    // BANCO Y EFECTIVO REPORT
+    // ==========================================
+
+    const handleCashPositionReport = () => {
+        const activeBankAccounts = bankAccounts.filter(a => a.active);
+        const activePettyCashes = pettyCashes.filter(p => p.active);
+        const totalBancos = activeBankAccounts.reduce((s, a) => s + a.currentBalance, 0);
+        const totalCaja = activePettyCashes.reduce((s, p) => s + p.currentBalance, 0);
+        const posicionTotal = totalBancos + totalCaja;
+
+        // Movimientos del mes actual
+        const now = new Date();
+        const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const bkThisMonth = bankTransactions.filter(t => new Date(t.date) >= firstOfMonth);
+        const cjThisMonth = cashTransactions.filter(t => new Date(t.date) >= firstOfMonth);
+        const bkEntradas = bkThisMonth.filter(t => t.type === "Deposito").reduce((s, t) => s + t.amount, 0);
+        const bkSalidas = bkThisMonth.filter(t => t.type === "Retiro").reduce((s, t) => s + t.amount, 0);
+        const cjIngresos = cjThisMonth.filter(t => t.type === "Ingreso").reduce((s, t) => s + t.amount, 0);
+        const cjEgresos = cjThisMonth.filter(t => t.type === "Egreso").reduce((s, t) => s + t.amount, 0);
+
+        const content = `
+            <div style="text-align: center; margin-bottom: 30px;">
+                <div style="font-size: 24px; font-weight: bold; color: #111827;">Posición de Efectivo</div>
+                <div style="color: #6b7280;">Estado actual de todas las cuentas y cajas</div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 30px;">
+                <div style="padding: 15px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; text-align: center;">
+                    <div style="font-weight: bold; color: #1d4ed8; font-size: 13px;">Total en Bancos</div>
+                    <div style="font-size: 22px; font-weight: bold; color: #1e40af;">${formatCurrency(totalBancos)}</div>
+                </div>
+                <div style="padding: 15px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; text-align: center;">
+                    <div style="font-weight: bold; color: #047857; font-size: 13px;">Total Caja Chica</div>
+                    <div style="font-size: 22px; font-weight: bold; color: #065f46;">${formatCurrency(totalCaja)}</div>
+                </div>
+                <div style="padding: 15px; background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 8px; text-align: center;">
+                    <div style="font-weight: bold; color: #4338ca; font-size: 13px;">Posición Total</div>
+                    <div style="font-size: 26px; font-weight: 800; color: #3730a3;">${formatCurrency(posicionTotal)}</div>
+                </div>
+            </div>
+
+            <div style="${sectionTitleStyle}">Movimientos del Mes Actual</div>
+            <table style="${tableStyle}">
+                <thead>
+                    <tr>
+                        <th style="${thStyle}">Concepto</th>
+                        <th style="${thStyle} text-align: right;">Monto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td style="${tdStyle}">Entradas bancarias (depósitos)</td><td style="${tdStyle} text-align: right; color: #16a34a;">${formatCurrency(bkEntradas)}</td></tr>
+                    <tr><td style="${tdStyle}">Salidas bancarias (retiros)</td><td style="${tdStyle} text-align: right; color: #dc2626;">${formatCurrency(bkSalidas)}</td></tr>
+                    <tr><td style="${tdStyle}">Ingresos de caja</td><td style="${tdStyle} text-align: right; color: #16a34a;">${formatCurrency(cjIngresos)}</td></tr>
+                    <tr><td style="${tdStyle}">Egresos de caja</td><td style="${tdStyle} text-align: right; color: #dc2626;">${formatCurrency(cjEgresos)}</td></tr>
+                </tbody>
+            </table>
+
+            <div style="${sectionTitleStyle}">Saldos por Cuenta Bancaria</div>
+            <table style="${tableStyle}">
+                <thead>
+                    <tr>
+                        <th style="${thStyle}">Cuenta</th>
+                        <th style="${thStyle}">Banco</th>
+                        <th style="${thStyle}">Tipo</th>
+                        <th style="${thStyle} text-align: right;">Saldo Actual</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${activeBankAccounts.map(acc => {
+                        const bank = banks.find(b => b.id === acc.bankId);
+                        return `<tr>
+                            <td style="${tdStyle}">${acc.name}</td>
+                            <td style="${tdStyle}">${bank?.name || '-'}</td>
+                            <td style="${tdStyle}">${acc.type}</td>
+                            <td style="${tdStyle} text-align: right; font-weight: bold;">${formatCurrency(acc.currentBalance)}</td>
+                        </tr>`;
+                    }).join('')}
+                    <tr style="background-color: #f9fafb; font-weight: bold;">
+                        <td style="${tdStyle} border-top: 2px solid #e5e7eb;" colspan="3">TOTAL BANCOS</td>
+                        <td style="${tdStyle} border-top: 2px solid #e5e7eb; text-align: right;">${formatCurrency(totalBancos)}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div style="${sectionTitleStyle}">Saldos por Caja Chica</div>
+            <table style="${tableStyle}">
+                <thead>
+                    <tr>
+                        <th style="${thStyle}">Caja</th>
+                        <th style="${thStyle} text-align: right;">Saldo Apertura</th>
+                        <th style="${thStyle} text-align: right;">Saldo Actual</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${activePettyCashes.map(pc => `
+                        <tr>
+                            <td style="${tdStyle}">${pc.name}</td>
+                            <td style="${tdStyle} text-align: right;">${formatCurrency(pc.openingBalance)}</td>
+                            <td style="${tdStyle} text-align: right; font-weight: bold;">${formatCurrency(pc.currentBalance)}</td>
+                        </tr>
+                    `).join('')}
+                    <tr style="background-color: #f9fafb; font-weight: bold;">
+                        <td style="${tdStyle} border-top: 2px solid #e5e7eb;" colspan="2">TOTAL CAJA</td>
+                        <td style="${tdStyle} border-top: 2px solid #e5e7eb; text-align: right;">${formatCurrency(totalCaja)}</td>
+                    </tr>
+                </tbody>
+            </table>
+        `;
+        printReport("Posición de Efectivo", content);
+    };
+
     // UI CONFIGURATION
     const reports = [
         {
@@ -877,6 +994,12 @@ export default function ReportsPage() {
                 { title: "Rentas por Cliente", icon: History, action: handleRentalsByClient, color: "text-indigo-400" },
                 { title: "Deudas y Saldos", icon: AlertCircle, action: handleClientBalances, color: "text-red-600" },
                 { title: "Directorio Clientes", icon: Users, action: handleClientDirectory, color: "text-indigo-700" },
+            ]
+        },
+        {
+            category: "Banco y Efectivo",
+            items: [
+                { title: "Posición de Efectivo", icon: Wallet, action: handleCashPositionReport, color: "text-blue-600" },
             ]
         }
     ];

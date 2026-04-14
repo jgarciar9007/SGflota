@@ -2,12 +2,12 @@
 
 import { useData } from "@/context/DataContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Car, DollarSign, TrendingUp, Users, Wrench, CheckCircle, Clock, ArrowUpRight } from "lucide-react";
+import { Car, DollarSign, TrendingUp, Users, Wrench, CheckCircle, Clock, ArrowUpRight, Landmark, Wallet } from "lucide-react";
 import { formatCurrency, cn } from "@/lib/utils";
 import Link from "next/link";
 
 export default function DashboardPage() {
-    const { vehicles, clients, rentals, invoices, maintenances, expenses, accountsPayable, driverPayments, payrolls, vehicleDocuments, vehicleInsurances, ivaRecords } = useData();
+    const { vehicles, clients, rentals, invoices, maintenances, expenses, accountsPayable, driverPayments, payrolls, vehicleDocuments, vehicleInsurances, ivaRecords, bankAccounts, pettyCashes } = useData();
 
     // --- Financials ---
     const totalIncome = invoices.reduce((sum, inv) => sum + inv.paidAmount, 0);
@@ -22,6 +22,10 @@ export default function DashboardPage() {
     const pendingIva = (ivaRecords || []).filter(r => r.status === "Pendiente").reduce((sum, r) => sum + r.amount, 0);
     const totalPayables = accountsPayable.reduce((sum, ap) => (ap.status === "Pendiente" || ap.status === "Retenido") ? sum + ap.amount : sum, 0) + pendingIva;
     const utilities = totalIncome - totalExpenses - totalPayables;
+
+    // --- Banco y Efectivo ---
+    const totalEnBancos = (bankAccounts || []).filter(a => a.active).reduce((s, a) => s + a.currentBalance, 0);
+    const totalCajaChica = (pettyCashes || []).filter(p => p.active).reduce((s, p) => s + p.currentBalance, 0);
 
     // --- Fleet ---
     const availableVehicles = vehicles.filter(v => v.status === "Disponible").length;
@@ -101,6 +105,28 @@ export default function DashboardPage() {
                     color="text-purple-600"
                     bg="bg-purple-50"
                     ring="ring-purple-100"
+                />
+            </div>
+
+            {/* Banco y Efectivo Cards */}
+            <div className="grid gap-6 md:grid-cols-2">
+                <StatCard
+                    title="Total en Bancos"
+                    value={formatCurrency(totalEnBancos)}
+                    label="Saldo consolidado cuentas bancarias"
+                    icon={Landmark}
+                    color="text-blue-600"
+                    bg="bg-blue-50"
+                    ring="ring-blue-100"
+                />
+                <StatCard
+                    title="Caja Chica"
+                    value={formatCurrency(totalCajaChica)}
+                    label="Saldo consolidado efectivo"
+                    icon={Wallet}
+                    color="text-teal-600"
+                    bg="bg-teal-50"
+                    ring="ring-teal-100"
                 />
             </div>
 

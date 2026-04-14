@@ -5,12 +5,12 @@ import { useData, Expense } from "@/context/DataContext";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
-import { Plus, X, Search, Calendar, DollarSign, Tag, Trash2, Edit } from "lucide-react";
+import { Plus, X, Search, Calendar, DollarSign, Tag, Trash2, Edit, Landmark, Wallet } from "lucide-react";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import { formatCurrency } from "@/lib/utils";
 
 export default function GeneralExpensesTab() {
-    const { expenses, addExpense, updateExpense, deleteExpense, expenseCategories, currentUser, canEdit, canDelete } = useData();
+    const { expenses, addExpense, updateExpense, deleteExpense, expenseCategories, currentUser, canEdit, canDelete, bankAccounts, pettyCashes, addBankTransaction, addCashTransaction } = useData();
     const [searchTerm, setSearchTerm] = useState("");
     const [showModal, setShowModal] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -31,16 +31,21 @@ export default function GeneralExpensesTab() {
         status: "Pagado" as "Pagado" | "Pendiente",
     });
 
+    // Banco y Efectivo — descuento opcional de cuenta
+    const [expenseAccountType, setExpenseAccountType] = useState<"none" | "bank" | "cash">("none");
+    const [expenseAccountId, setExpenseAccountId] = useState("");
+
     const filteredExpenses = expenses.filter(expense =>
         expense.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         expenseCategories.find(c => c.id === expense.categoryId)?.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        const amount = parseFloat(formData.amount.replace(/\s/g, ''));
         const expenseData = {
             description: formData.description,
-            amount: parseFloat(formData.amount.replace(/\s/g, '')),
+            amount,
             categoryId: formData.categoryId,
             date: formData.date,
             status: formData.status,
@@ -49,10 +54,37 @@ export default function GeneralExpensesTab() {
         if (editingId) {
             updateExpense(editingId, expenseData);
         } else {
-            addExpense(expenseData);
+            const created = await addExpense(expenseData) as any;
+            // Descontar de cuenta si se seleccionó
+            if (expenseAccountType === "bank" && expenseAccountId) {
+                try {
+                    await addBankTransaction({
+                        bankAccountId: expenseAccountId,
+                        type: "Retiro",
+                        amount,
+                        date: formData.date,
+                        description: `Gasto: ${formData.description}`,
+                        expenseId: created?.id,
+                    });
+                } catch { /* silencioso */ }
+            } else if (expenseAccountType === "cash" && expenseAccountId) {
+                try {
+                    await addCashTransaction({
+                        pettyCashId: expenseAccountId,
+                        type: "Egreso",
+                        category: "Gasto Operativo",
+                        amount,
+                        date: formData.date,
+                        description: `Gasto: ${formData.description}`,
+                        expenseId: created?.id,
+                    });
+                } catch { /* silencioso */ }
+            }
         }
         setShowModal(false);
         resetForm();
+        setExpenseAccountType("none");
+        setExpenseAccountId("");
     };
 
     const handleEdit = (expense: Expense) => {
@@ -90,6 +122,8 @@ export default function GeneralExpensesTab() {
             status: "Pagado",
         });
         setEditingId(null);
+        setExpenseAccountType("none");
+        setExpenseAccountId("");
     };
 
     // const totalExpenses = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
@@ -268,6 +302,51 @@ export default function GeneralExpensesTab() {
                                         <option value="Pendiente">Pendiente de Pago</option>
                                     </select>
                                 </div>
+
+                                {/* Descontar de cuenta (solo para gastos nuevos) */}
+                                {!editingId && (
+                                    <div className="border border-border rounded-lg p-3 bg-muted/30 space-y-2">
+                                        <p className="text-sm font-medium text-foreground flex items-center gap-2">
+                                            <Landmark className="h-4 w-4" />
+                                            Descontar de cuenta <span className="text-muted-foreground font-normal">(opcional)</span>
+                                        </p>
+                                        <div className="flex gap-2 flex-wrap">
+                                            {[
+                                                { value: "none", label: "Ninguna" },
+                                                { value: "bank", label: "Cuenta Bancaria" },
+                                                { value: "cash", label: "Caja Chica" },
+                                            ].map(opt => (
+                                                <label key={opt.value} className={`flex items-center gap-1 cursor-pointer text-xs px-2 py-1 rounded border transition-colors ${expenseAccountType === opt.value ? "border-blue-500 bg-blue-50 text-blue-700" : "border-border text-muted-foreground"}`}>
+                                                    <input type="radio" name="expAccType" value={opt.value}
+                                                        checked={expenseAccountType === opt.value}
+                                                        onChange={() => { setExpenseAccountType(opt.value as "none" | "bank" | "cash"); setExpenseAccountId(""); }}
+                                                        className="sr-only" />
+                                                    {opt.value === "cash" && <Wallet className="h-3 w-3" />}
+                                                    {opt.value === "bank" && <Landmark className="h-3 w-3" />}
+                                                    {opt.label}
+                                                </label>
+                                            ))}
+                                        </div>
+                                        {expenseAccountType === "bank" && (
+                                            <select value={expenseAccountId} onChange={e => setExpenseAccountId(e.target.value)}
+                                                className="w-full h-9 px-3 rounded-md bg-background border border-input text-foreground text-sm">
+                                                <option value="">Seleccionar cuenta bancaria</option>
+                                                {bankAccounts.filter(a => a.active).map(a => (
+                                                    <option key={a.id} value={a.id}>{a.name} — {formatCurrency(a.currentBalance)}</option>
+                                                ))}
+                                            </select>
+                                        )}
+                                        {expenseAccountType === "cash" && (
+                                            <select value={expenseAccountId} onChange={e => setExpenseAccountId(e.target.value)}
+                                                className="w-full h-9 px-3 rounded-md bg-background border border-input text-foreground text-sm">
+                                                <option value="">Seleccionar caja chica</option>
+                                                {pettyCashes.filter(p => p.active).map(p => (
+                                                    <option key={p.id} value={p.id}>{p.name} — {formatCurrency(p.currentBalance)}</option>
+                                                ))}
+                                            </select>
+                                        )}
+                                    </div>
+                                )}
                             </CardContent>
                             <CardFooter className="border-t border-border pt-6">
                                 <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white">

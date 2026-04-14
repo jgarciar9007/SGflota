@@ -340,3 +340,86 @@ model VehicleInsurance {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
+
+// ============================================================
+// BANCO Y EFECTIVO
+// ============================================================
+
+model Bank {
+  id        String        @id @default(uuid())
+  name      String
+  code      String?
+  active    Boolean       @default(true)
+  accounts  BankAccount[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model BankAccount {
+  id             String            @id @default(uuid())
+  bankId         String
+  name           String
+  accountNumber  String?
+  type           String            @default("Corriente") // "Corriente" | "Ahorros"
+  openingBalance Int               @default(0)
+  currentBalance Int               @default(0)
+  active         Boolean           @default(true)
+  bank           Bank              @relation(fields: [bankId], references: [id], onDelete: Restrict)
+  transactions   BankTransaction[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+}
+
+model PettyCash {
+  id             String            @id @default(uuid())
+  name           String
+  openingBalance Int               @default(0)
+  currentBalance Int               @default(0)
+  active         Boolean           @default(true)
+  transactions   CashTransaction[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+}
+
+model BankTransaction {
+  id            String      @id @default(uuid())
+  bankAccountId String
+  type          String      // "Deposito" | "Retiro" | "Transferencia"
+  amount        Int
+  date          DateTime
+  description   String
+  reference     String?
+  paymentId     String?
+  expenseId     String?
+  transferId    String?
+  bankAccount   BankAccount @relation(fields: [bankAccountId], references: [id], onDelete: Restrict)
+  createdAt     DateTime    @default(now())
+}
+
+model CashTransaction {
+  id          String    @id @default(uuid())
+  pettyCashId String
+  type        String    // "Ingreso" | "Egreso"
+  category    String    // "Pago de Renta" | "Gasto Operativo" | "Depósito a Banco" | "Otro"
+  amount      Int
+  date        DateTime
+  description String
+  reference   String?
+  paymentId   String?
+  expenseId   String?
+  transferId  String?
+  pettyCash   PettyCash @relation(fields: [pettyCashId], references: [id], onDelete: Restrict)
+  createdAt   DateTime  @default(now())
+}
+
+model Transfer {
+  id                  String   @id @default(uuid())
+  type                String   // "BancoABanco" | "CajaABanco"
+  amount              Int
+  date                DateTime
+  description         String
+  sourceBankAccountId String?
+  destBankAccountId   String?
+  pettyCashId         String?
+  createdAt           DateTime @default(now())
+}

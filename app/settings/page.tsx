@@ -5,7 +5,7 @@ import { useData, User, CompanySettings } from "@/context/DataContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Building2, Save, Upload, Loader2, Users, Plus, Pencil, Trash2, X, Tag } from "lucide-react";
+import { Building2, Save, Upload, Loader2, Users, Plus, Pencil, Trash2, X, Tag, Landmark } from "lucide-react";
 import Image from "next/image";
 
 import OwnersTab from "@/components/settings/OwnersTab";
@@ -13,10 +13,13 @@ import AgentsTab from "@/components/settings/AgentsTab";
 import CustomersTab from "@/components/settings/CustomersTab";
 import ExpenseCategoriesTab from "@/components/settings/ExpenseCategoriesTab";
 import PersonnelTab from "@/components/settings/PersonnelTab";
+import BanksTab from "@/components/settings/BanksTab";
+import BankAccountsTab from "@/components/settings/BankAccountsTab";
+import PettyCashTab from "@/components/settings/PettyCashTab";
 
 export default function SettingsPage() {
     const { companySettings, updateCompanySettings, users, addUser, updateUser, deleteUser, currentUser } = useData();
-    const [activeTab, setActiveTab] = useState<"company" | "users" | "owners" | "agents" | "expenses" | "customers" | "personnel">("company");
+    const [activeTab, setActiveTab] = useState<"company" | "users" | "owners" | "agents" | "expenses" | "customers" | "personnel" | "banks" | "bank-accounts" | "petty-cash">("company");
 
     // Company Settings State
     const [formData, setFormData] = useState<CompanySettings>(companySettings);
@@ -217,6 +220,45 @@ export default function SettingsPage() {
                             <div className="flex items-center gap-2">
                                 <Users className="h-4 w-4" />
                                 Clientes
+                            </div>
+                        </button>
+
+                        <button
+                            onClick={() => setActiveTab("banks")}
+                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === "banks"
+                                ? "bg-primary text-primary-foreground"
+                                : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                                }`}
+                        >
+                            <div className="flex items-center gap-2">
+                                <Landmark className="h-4 w-4" />
+                                Bancos
+                            </div>
+                        </button>
+
+                        <button
+                            onClick={() => setActiveTab("bank-accounts")}
+                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === "bank-accounts"
+                                ? "bg-primary text-primary-foreground"
+                                : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                                }`}
+                        >
+                            <div className="flex items-center gap-2">
+                                <Landmark className="h-4 w-4" />
+                                Cuentas Bancarias
+                            </div>
+                        </button>
+
+                        <button
+                            onClick={() => setActiveTab("petty-cash")}
+                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === "petty-cash"
+                                ? "bg-primary text-primary-foreground"
+                                : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                                }`}
+                        >
+                            <div className="flex items-center gap-2">
+                                <Landmark className="h-4 w-4" />
+                                Cajas Chicas
                             </div>
                         </button>
                     </>
@@ -575,6 +617,9 @@ export default function SettingsPage() {
             {activeTab === "customers" && <CustomersTab />}
             {activeTab === "expenses" && <ExpenseCategoriesTab />}
             {activeTab === "personnel" && <PersonnelTab />}
+            {activeTab === "banks" && <BanksTab />}
+            {activeTab === "bank-accounts" && <BankAccountsTab />}
+            {activeTab === "petty-cash" && <PettyCashTab />}
         </div>
     );
 }

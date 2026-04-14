@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Car, LayoutDashboard, Settings, Calendar, LogOut, CreditCard, Wrench, FileText, MessageSquare } from "lucide-react";
+import { Car, LayoutDashboard, Settings, Calendar, LogOut, CreditCard, Wrench, FileText, MessageSquare, Landmark } from "lucide-react";
 import { signOut } from "next-auth/react";
 
 const sidebarItems = [
@@ -13,6 +13,7 @@ const sidebarItems = [
     { icon: Calendar, label: "Rentas", href: "/rentals" },
     { icon: CreditCard, label: "Facturación", href: "/billing" },
     { icon: Wrench, label: "Gastos y Mantenimiento", href: "/expenses" },
+    { icon: Landmark, label: "Banco y Efectivo", href: "/bank-cash" },
     { icon: FileText, label: "Reportes", href: "/reports" },
     { icon: Settings, label: "Configuración", href: "/settings" },
 ];
