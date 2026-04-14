@@ -109,7 +109,7 @@ export default function GeneralExpensesTab() {
             status: "Pagado",
         });
         setEditingId(null);
-        setExpenseAccountType("none");
+        setExpenseAccountType("");
         setExpenseAccountId("");
     };
 
