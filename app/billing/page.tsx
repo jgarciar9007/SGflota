@@ -641,7 +641,10 @@ export default function BillingPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold text-foreground">{formatCurrency(totalPayable)}</div>
-                        <p className="text-xs text-muted-foreground mt-1">{accountsPayable.filter(ap => ap.status === "Pendiente" || ap.status === "Retenido").length} CxP + IVA pendiente</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            {accountsPayable.filter(ap => ap.status === "Pendiente" || ap.status === "Retenido").length} CxP pendiente
+                            {pendingIva > 0 ? ` + IVA: ${formatCurrency(pendingIva)}` : ""}
+                        </p>
                     </CardContent>
                 </Card>
             </div>
@@ -1201,7 +1204,7 @@ export default function BillingPage() {
                                                 <p className="text-foreground font-medium">{ap.beneficiaryName} ({ap.type})</p>
                                                 <p className="text-xs text-muted-foreground">Pagado el {new Date(ap.date).toLocaleDateString()}</p>
                                             </div>
-                                            <div className="flex items-center gap-4">
+                                            <div className="flex items-center gap-3">
                                                 <p className="text-green-600 font-bold">{formatCurrency(ap.amount)}</p>
                                                 <Button
                                                     variant="outline"
@@ -1211,6 +1214,27 @@ export default function BillingPage() {
                                                 >
                                                     <Printer className="h-4 w-4" />
                                                 </Button>
+                                                {canDelete(currentUser) && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => setConfirmModal({
+                                                            isOpen: true,
+                                                            title: "Eliminar Pago",
+                                                            description: `¿Eliminar el registro de pago a ${ap.beneficiaryName}?`,
+                                                            confirmText: "Eliminar",
+                                                            variant: "danger",
+                                                            onConfirm: async () => {
+                                                                setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                                                                await deleteAccountPayable(ap.id);
+                                                                toast.success("Registro eliminado");
+                                                            }
+                                                        })}
+                                                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                )}
                                             </div>
                                         </div>
                                     ))}
