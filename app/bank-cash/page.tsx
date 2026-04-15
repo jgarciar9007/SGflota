@@ -148,7 +148,7 @@ export default function BankCashPage() {
 
     // ── Nueva Transferencia ──────────────────────────────────────────
     const [trfForm, setTrfForm] = useState({
-        type: "BancoABanco" as "BancoABanco" | "CajaABanco",
+        type: "BancoABanco" as "BancoABanco" | "CajaABanco" | "BancoACaja",
         sourceBankAccountId: "", destBankAccountId: "", pettyCashId: "",
         amount: "", date: new Date().toISOString().split("T")[0], description: "",
     });
@@ -169,6 +169,10 @@ export default function BankCashPage() {
             toast.error("Selecciona caja origen y cuenta destino");
             return;
         }
+        if (trfForm.type === "BancoACaja" && (!trfForm.sourceBankAccountId || !trfForm.pettyCashId)) {
+            toast.error("Selecciona cuenta bancaria origen y caja destino");
+            return;
+        }
         setTrfSubmitting(true);
         try {
             await addTransfer({
@@ -176,9 +180,9 @@ export default function BankCashPage() {
                 amount,
                 date: trfForm.date,
                 description: trfForm.description,
-                sourceBankAccountId: trfForm.type === "BancoABanco" ? trfForm.sourceBankAccountId : undefined,
-                destBankAccountId: trfForm.destBankAccountId || undefined,
-                pettyCashId: trfForm.type === "CajaABanco" ? trfForm.pettyCashId : undefined,
+                sourceBankAccountId: (trfForm.type === "BancoABanco" || trfForm.type === "BancoACaja") ? trfForm.sourceBankAccountId : undefined,
+                destBankAccountId: (trfForm.type === "BancoABanco" || trfForm.type === "CajaABanco") ? trfForm.destBankAccountId : undefined,
+                pettyCashId: (trfForm.type === "CajaABanco" || trfForm.type === "BancoACaja") ? trfForm.pettyCashId : undefined,
             });
             toast.success("Transferencia registrada");
             setTrfForm({ type: "BancoABanco", sourceBankAccountId: "", destBankAccountId: "", pettyCashId: "", amount: "", date: new Date().toISOString().split("T")[0], description: "" });
@@ -493,9 +497,31 @@ export default function BankCashPage() {
                     </div>
 
                     <div className="space-y-2">
-                        {filteredCjTx.length === 0 ? (
+                        {/* Saldo de apertura como primera entrada */}
+                        {(cjFilterBox
+                            ? pettyCashes.filter(p => p.id === cjFilterBox)
+                            : pettyCashes.filter(p => p.active)
+                        ).map(pc => (
+                            <Card key={`opening-${pc.id}`} className="border-amber-200 bg-amber-50">
+                                <CardContent className="p-3 flex items-center justify-between gap-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-9 w-9 rounded-full bg-amber-100 flex items-center justify-center">
+                                            <Wallet className="h-4 w-4 text-amber-600" />
+                                        </div>
+                                        <div>
+                                            <p className="font-medium text-amber-900 text-sm">Saldo de Apertura</p>
+                                            <p className="text-xs text-amber-700">{pc.name} · Apertura inicial</p>
+                                        </div>
+                                    </div>
+                                    <span className="font-bold text-amber-700">+{formatCurrency(pc.openingBalance)}</span>
+                                </CardContent>
+                            </Card>
+                        ))}
+
+                        {filteredCjTx.length === 0 && (
                             <div className="text-center py-10 text-muted-foreground">No hay movimientos que mostrar.</div>
-                        ) : filteredCjTx.map(tx => {
+                        )}
+                        {filteredCjTx.map(tx => {
                             const box = pettyCashes.find(p => p.id === tx.pettyCashId);
                             const isIngreso = tx.type === "Ingreso";
                             return (
@@ -561,7 +587,7 @@ export default function BankCashPage() {
                             </CardHeader>
                             <CardContent>
                                 <form onSubmit={handleTrfSubmit} className="space-y-4">
-                                    <div className="flex gap-4">
+                                    <div className="flex flex-wrap gap-3">
                                         <label className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg border-2 transition-colors ${trfForm.type === "BancoABanco" ? "border-blue-500 bg-blue-50 text-blue-700" : "border-border text-muted-foreground"}`}>
                                             <input type="radio" name="trfType" value="BancoABanco" checked={trfForm.type === "BancoABanco"}
                                                 onChange={() => setTrfForm(p => ({ ...p, type: "BancoABanco", pettyCashId: "" }))} className="sr-only" />
@@ -569,8 +595,13 @@ export default function BankCashPage() {
                                         </label>
                                         <label className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg border-2 transition-colors ${trfForm.type === "CajaABanco" ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-border text-muted-foreground"}`}>
                                             <input type="radio" name="trfType" value="CajaABanco" checked={trfForm.type === "CajaABanco"}
-                                                onChange={() => setTrfForm(p => ({ ...p, type: "CajaABanco", sourceBankAccountId: "" }))} className="sr-only" />
+                                                onChange={() => setTrfForm(p => ({ ...p, type: "CajaABanco", sourceBankAccountId: "", destBankAccountId: "" }))} className="sr-only" />
                                             <Wallet className="h-4 w-4" /> Caja a Banco
+                                        </label>
+                                        <label className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg border-2 transition-colors ${trfForm.type === "BancoACaja" ? "border-amber-500 bg-amber-50 text-amber-700" : "border-border text-muted-foreground"}`}>
+                                            <input type="radio" name="trfType" value="BancoACaja" checked={trfForm.type === "BancoACaja"}
+                                                onChange={() => setTrfForm(p => ({ ...p, type: "BancoACaja", destBankAccountId: "" }))} className="sr-only" />
+                                            <Landmark className="h-4 w-4" /> Banco a Caja
                                         </label>
                                     </div>
 
@@ -600,7 +631,7 @@ export default function BankCashPage() {
                                                     </select>
                                                 </div>
                                             </>
-                                        ) : (
+                                        ) : trfForm.type === "CajaABanco" ? (
                                             <>
                                                 <div>
                                                     <label className="block text-sm font-medium mb-1">Caja Origen *</label>
@@ -621,6 +652,31 @@ export default function BankCashPage() {
                                                         <option value="">Seleccionar cuenta</option>
                                                         {bankAccounts.filter(a => a.active).map(a => (
                                                             <option key={a.id} value={a.id}>{a.name}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div>
+                                                    <label className="block text-sm font-medium mb-1">Cuenta Bancaria Origen *</label>
+                                                    <select value={trfForm.sourceBankAccountId}
+                                                        onChange={e => setTrfForm(p => ({ ...p, sourceBankAccountId: e.target.value }))}
+                                                        className="w-full border border-border rounded px-3 py-2 bg-background text-foreground text-sm" required>
+                                                        <option value="">Seleccionar cuenta</option>
+                                                        {bankAccounts.filter(a => a.active).map(a => (
+                                                            <option key={a.id} value={a.id}>{a.name} — {formatCurrency(a.currentBalance)}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium mb-1">Caja Destino *</label>
+                                                    <select value={trfForm.pettyCashId}
+                                                        onChange={e => setTrfForm(p => ({ ...p, pettyCashId: e.target.value }))}
+                                                        className="w-full border border-border rounded px-3 py-2 bg-background text-foreground text-sm" required>
+                                                        <option value="">Seleccionar caja</option>
+                                                        {pettyCashes.filter(p => p.active).map(p => (
+                                                            <option key={p.id} value={p.id}>{p.name} — {formatCurrency(p.currentBalance)}</option>
                                                         ))}
                                                     </select>
                                                 </div>
@@ -677,7 +733,9 @@ export default function BankCashPage() {
                                                     <p className="text-xs text-muted-foreground">
                                                         {trf.type === "BancoABanco"
                                                             ? `${srcAcc?.name || "?"} → ${dstAcc?.name || "?"}`
-                                                            : `${srcBox?.name || "?"} → ${dstAcc?.name || "?"}`
+                                                            : trf.type === "CajaABanco"
+                                                            ? `${srcBox?.name || "?"} → ${dstAcc?.name || "?"}`
+                                                            : `${srcAcc?.name || "?"} → ${srcBox?.name || "?"}`
                                                         } · {new Date(trf.date).toLocaleDateString("es-ES")}
                                                     </p>
                                                 </div>

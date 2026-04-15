@@ -335,7 +335,7 @@ export interface CashTransaction {
 
 export interface Transfer {
     id: string;
-    type: "BancoABanco" | "CajaABanco";
+    type: "BancoABanco" | "CajaABanco" | "BancoACaja";
     amount: number;
     date: string;
     description: string;

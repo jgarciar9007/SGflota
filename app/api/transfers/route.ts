@@ -13,9 +13,10 @@ export async function GET() {
 
 export async function POST(request: Request) {
     const data = await request.json();
-    // type: "BancoABanco" | "CajaABanco"
+    // type: "BancoABanco" | "CajaABanco" | "BancoACaja"
     // BancoABanco: sourceBankAccountId, destBankAccountId, amount, date, description
     // CajaABanco:  pettyCashId, destBankAccountId, amount, date, description
+    // BancoACaja:  sourceBankAccountId, pettyCashId, amount, date, description
 
     const result = await prisma.$transaction(async (tx) => {
         const transfer = await tx.transfer.create({
@@ -93,6 +94,39 @@ export async function POST(request: Request) {
             });
             await tx.bankAccount.update({
                 where: { id: data.destBankAccountId },
+                data: { currentBalance: { increment: data.amount } },
+            });
+        } else if (data.type === "BancoACaja") {
+            // Retiro en cuenta bancaria origen
+            await tx.bankTransaction.create({
+                data: {
+                    bankAccountId: data.sourceBankAccountId,
+                    type: "Retiro",
+                    amount: data.amount,
+                    date: new Date(data.date),
+                    description: `Transferencia a caja: ${data.description}`,
+                    transferId: transfer.id,
+                },
+            });
+            await tx.bankAccount.update({
+                where: { id: data.sourceBankAccountId },
+                data: { currentBalance: { decrement: data.amount } },
+            });
+
+            // Ingreso en caja destino
+            await tx.cashTransaction.create({
+                data: {
+                    pettyCashId: data.pettyCashId,
+                    type: "Ingreso",
+                    category: "Transferencia desde Banco",
+                    amount: data.amount,
+                    date: new Date(data.date),
+                    description: `Recepción desde banco: ${data.description}`,
+                    transferId: transfer.id,
+                },
+            });
+            await tx.pettyCash.update({
+                where: { id: data.pettyCashId },
                 data: { currentBalance: { increment: data.amount } },
             });
         }
