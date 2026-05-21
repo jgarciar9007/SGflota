@@ -7,7 +7,7 @@ import { formatCurrency, cn } from "@/lib/utils";
 import Link from "next/link";
 
 export default function DashboardPage() {
-    const { vehicles, clients, rentals, invoices, maintenances, expenses, accountsPayable, driverPayments, payrolls, vehicleDocuments, vehicleInsurances, ivaRecords, bankAccounts, pettyCashes } = useData();
+    const { vehicles, clients, rentals, invoices, maintenances, expenses, accountsPayable, driverPayments, payrolls, vehicleDocuments, vehicleInsurances, ivaRecords, bankAccounts, pettyCashes, cashTransactions } = useData();
 
     // --- Financials ---
     const totalIncome = invoices.reduce((sum, inv) => sum + inv.paidAmount, 0);
@@ -25,7 +25,10 @@ export default function DashboardPage() {
 
     // --- Banco y Efectivo ---
     const totalEnBancos = (bankAccounts || []).filter(a => a.active).reduce((s, a) => s + a.currentBalance, 0);
-    const totalCajaChica = (pettyCashes || []).filter(p => p.active).reduce((s, p) => s + p.currentBalance, 0);
+    const activePettyCashIds = new Set((pettyCashes || []).filter(p => p.active).map(p => p.id));
+    const totalCajaChica = (cashTransactions || [])
+        .filter(tx => activePettyCashIds.has(tx.pettyCashId))
+        .reduce((s, tx) => s + (tx.type === "Ingreso" ? tx.amount : -tx.amount), 0);
 
     // --- Fleet ---
     const availableVehicles = vehicles.filter(v => v.status === "Disponible").length;

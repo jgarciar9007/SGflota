@@ -563,7 +563,8 @@ export default function BillingPage() {
     const paidAmount = invoices.reduce((sum, inv) => sum + inv.paidAmount, 0);
 
     const pendingIva = (ivaRecords || []).filter(r => r.status === "Pendiente").reduce((sum, r) => sum + r.amount, 0);
-    const totalPayable = accountsPayable.reduce((sum, ap) => (ap.status === "Pendiente" || ap.status === "Retenido") ? sum + ap.amount : sum, 0) + pendingIva;
+    const activeAccountsPayable = (accountsPayable || []).filter(ap => ap && (ap.status === "Pendiente" || ap.status === "Retenido"));
+    const totalPayable = activeAccountsPayable.reduce((sum, ap) => sum + ap.amount, 0) + pendingIva;
 
     // Group payments by receiptId
     const uniqueReceipts = Array.from(new Set(payments.map(p => p.receiptId))).map(receiptId => {
@@ -642,7 +643,7 @@ export default function BillingPage() {
                     <CardContent>
                         <div className="text-3xl font-bold text-foreground">{formatCurrency(totalPayable)}</div>
                         <p className="text-xs text-muted-foreground mt-1">
-                            {accountsPayable.filter(ap => ap.status === "Pendiente" || ap.status === "Retenido").length} CxP pendiente
+                            {activeAccountsPayable.length} CxP pendiente
                             {pendingIva > 0 ? ` + IVA: ${formatCurrency(pendingIva)}` : ""}
                         </p>
                     </CardContent>
@@ -1071,19 +1072,20 @@ export default function BillingPage() {
                 activeTab === "payables" && (
                     <div>
                         {/* Payables Summary by Beneficiary */}
-                        <h3 className="text-xl font-bold text-foreground mb-4">Resumen por Beneficiario (Pendiente)</h3>
+                        <h3 className="text-xl font-bold text-foreground mb-4">Resumen por Beneficiario (Pendiente y Retenido)</h3>
                         <div className="grid gap-4 md:grid-cols-3 mb-8">
-                            {Object.entries((accountsPayable || [])
-                                .filter(ap => ap && ap.status === "Pendiente")
+                            {Object.entries(activeAccountsPayable
                                 .reduce((acc, ap) => {
                                     const name = ap.beneficiaryName || 'Sin Nombre';
                                     if (!acc[name]) {
-                                        acc[name] = { amount: 0, count: 0, type: ap.type || 'Desconocido' };
+                                        acc[name] = { amount: 0, count: 0, type: ap.type || 'Desconocido', retained: 0, pending: 0 };
                                     }
                                     acc[name].amount += (ap.amount || 0);
                                     acc[name].count += 1;
+                                    if (ap.status === "Retenido") acc[name].retained += 1;
+                                    if (ap.status === "Pendiente") acc[name].pending += 1;
                                     return acc;
-                                }, {} as Record<string, { amount: number, count: number, type: string }>)
+                                }, {} as Record<string, { amount: number, count: number, type: string, retained: number, pending: number }>)
                             ).map(([name, data]) => (
                                 <Card key={name} className="border-border bg-card">
                                     <CardContent className="p-4">
@@ -1097,7 +1099,11 @@ export default function BillingPage() {
                                             </div>
                                             <div className="text-right">
                                                 <p className="text-2xl font-bold text-foreground">{formatCurrency(data.amount)}</p>
-                                                <p className="text-xs text-muted-foreground">{data.count} registro(s)</p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {data.count} registro(s)
+                                                    {data.retained > 0 ? ` - ${data.retained} retenido(s)` : ""}
+                                                    {data.pending > 0 ? ` - ${data.pending} pendiente(s)` : ""}
+                                                </p>
                                             </div>
                                         </div>
                                     </CardContent>
@@ -1107,9 +1113,10 @@ export default function BillingPage() {
 
                         <h3 className="text-xl font-bold text-foreground mb-4">Detalle de Cuentas por Pagar (Comisiones y Terceros)</h3>
                         <div className="space-y-3">
-                            {accountsPayable && accountsPayable.length > 0 ? accountsPayable.filter(ap => ap && ap.status === "Pendiente").map((ap) => {
+                            {activeAccountsPayable.length > 0 ? activeAccountsPayable.map((ap) => {
                                 const associatedRental = rentals ? rentals.find(r => r && r.id === ap.rentalId) : null;
                                 const vehicle = associatedRental && vehicles ? vehicles.find(v => v && v.id === associatedRental.vehicleId) : null;
+                                const isRetained = ap.status === "Retenido";
 
                                 return (
                                     <Card key={ap.id || Math.random()} className="border-border bg-card hover:bg-accent/50 transition-colors">
@@ -1120,6 +1127,9 @@ export default function BillingPage() {
                                                         <div className="flex items-center gap-2 mb-1">
                                                             <FileText className="h-4 w-4 text-purple-600" />
                                                             <span className="text-foreground font-medium">{ap.type || 'Desconocido'}</span>
+                                                            <span className={`text-xs px-2 py-0.5 rounded-full ${isRetained ? "bg-amber-100 text-amber-700" : "bg-green-100 text-green-700"}`}>
+                                                                {ap.status}
+                                                            </span>
                                                         </div>
                                                         <p className="text-xs text-muted-foreground font-mono">Ref: {associatedRental && associatedRental.id ? `Renta #${String(associatedRental.id).slice(-6)}` : 'N/A'}</p>
                                                     </div>
@@ -1141,9 +1151,11 @@ export default function BillingPage() {
                                                                 setPayableAccId("");
                                                                 setPayableAccountModal({ isOpen: true, ap });
                                                             }}
+                                                            disabled={isRetained}
                                                             className="bg-green-600 hover:bg-green-700 text-white"
+                                                            title={isRetained ? "Se habilita cuando la factura de la renta quede pagada" : "Pagar cuenta por pagar"}
                                                         >
-                                                            <CreditCard className="mr-2 h-4 w-4" /> Pagar
+                                                            <CreditCard className="mr-2 h-4 w-4" /> {isRetained ? "Retenido" : "Pagar"}
                                                         </Button>
                                                         {canEdit(currentUser) && (
                                                             <Button

@@ -34,8 +34,14 @@ export default function BankCashPage() {
     // ── Resumen ─────────────────────────────────────────────────────
     const activeBankAccounts = bankAccounts.filter(a => a.active);
     const activePettyCashes = pettyCashes.filter(p => p.active);
+    const activePettyCashIds = new Set(activePettyCashes.map(p => p.id));
+    const getPettyCashNetBalance = (pettyCashId: string) => cashTransactions
+        .filter(tx => tx.pettyCashId === pettyCashId)
+        .reduce((s, tx) => s + (tx.type === "Ingreso" ? tx.amount : -tx.amount), 0);
     const totalBancos = activeBankAccounts.reduce((s, a) => s + a.currentBalance, 0);
-    const totalCaja = activePettyCashes.reduce((s, p) => s + p.currentBalance, 0);
+    const totalCaja = cashTransactions
+        .filter(tx => activePettyCashIds.has(tx.pettyCashId))
+        .reduce((s, tx) => s + (tx.type === "Ingreso" ? tx.amount : -tx.amount), 0);
     const posicionTotal = totalBancos + totalCaja;
 
     // ── Movimientos Bancarios filters ────────────────────────────────
@@ -303,9 +309,9 @@ export default function BankCashPage() {
                                             <div className="flex items-start justify-between">
                                                 <div>
                                                     <p className="font-semibold text-foreground">{pc.name}</p>
-                                                    <p className="text-xs text-muted-foreground">Apertura: {formatCurrency(pc.openingBalance)}</p>
+                                                    <p className="text-xs text-muted-foreground">Ingresos - egresos</p>
                                                 </div>
-                                                <p className="font-bold text-emerald-700">{formatCurrency(pc.currentBalance)}</p>
+                                                <p className="font-bold text-emerald-700">{formatCurrency(getPettyCashNetBalance(pc.id))}</p>
                                             </div>
                                         </CardContent>
                                     </Card>

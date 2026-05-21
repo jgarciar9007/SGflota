@@ -12,7 +12,18 @@
       "Bash(python -c \"import paramiko; print\\(''ok''\\)\")",
       "Bash(python -c \":*)",
       "Bash(npx tsc:*)",
-      "Bash(node -e \":*)"
+      "Bash(node -e \":*)",
+      "Bash(sshpass -p 'Herve.2026GE' ssh -o StrictHostKeyChecking=no root@187.77.163.74 \"cd /var/www/SGflota && git pull origin main\")",
+      "Bash(where plink:*)",
+      "Bash(where ssh:*)",
+      "Bash(where putty:*)",
+      "Bash(\"C:\\\\Program Files\\\\PuTTY\\\\plink.exe\" -ssh -pw \"Herve.2026GE\" root@187.77.163.74 \"cd /var/www/SGflota && git pull origin main\")",
+      "Bash(\"C:\\\\Program Files\\\\PuTTY\\\\plink.exe\" -ssh -pw \"Herve.2026GE\" root@187.77.163.74 \"cd /var/www/SGflota && npm run build 2>&1\")",
+      "Bash(\"C:\\\\Program Files\\\\PuTTY\\\\plink.exe\" -ssh -pw \"Herve.2026GE\" root@187.77.163.74 \"cd /var/www/SGflota && cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/ && pm2 restart sgflota && pm2 status\")",
+      "Bash(\"C:\\\\Program Files\\\\PuTTY\\\\plink.exe\" -ssh -pw \"Herve.2026GE\" root@187.77.163.74 \"curl -s https://urban-rentals.es/sitemap.xml\")",
+      "Bash(\"C:\\\\Program Files\\\\PuTTY\\\\plink.exe\" -ssh -pw \"Herve.2026GE\" root@187.77.163.74 \"curl -s http://localhost:3000/sitemap.xml\")",
+      "Bash(\"C:\\\\Program Files\\\\PuTTY\\\\plink.exe\" -ssh -pw \"Herve.2026GE\" root@187.77.163.74 \"cat /etc/nginx/sites-available/urban-rentals.es\")",
+      "Bash(python3 -c ':*)"
     ]
   }
 }
